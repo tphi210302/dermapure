@@ -135,8 +135,10 @@ const seed = async () => {
 
     // Seed users — use create() so pre-save hooks (bcrypt) run
     const adminPassword = (process.env.SEED_ADMIN_PASSWORD || (() => { throw new Error('SEED_ADMIN_PASSWORD is required (set it in .env)'); })());
-    const admin    = await User.create({ name: 'Admin User', email: process.env.SEED_ADMIN_EMAIL || 'admin@example.com', password: adminPassword, role: 'admin',    isActive: true });
-    const customer = await User.create({ name: 'John Doe',   email: 'customer@pharma.com',                              password: adminPassword, role: 'customer', isActive: true });
+    const adminPhone    = process.env.SEED_ADMIN_PHONE    || '0900000000';
+    const customerPhone = process.env.SEED_CUSTOMER_PHONE || '0900000001';
+    const admin    = await User.create({ name: 'Admin User', email: process.env.SEED_ADMIN_EMAIL || 'admin@example.com', phone: adminPhone,    password: adminPassword, role: 'admin',    isActive: true });
+    const customer = await User.create({ name: 'John Doe',   email: 'customer@pharma.com',                              phone: customerPhone, password: adminPassword, role: 'customer', isActive: true });
     console.log(`👤 Created admin: ${admin.email}`);
     console.log(`👤 Created customer: ${customer.email}`);
 
