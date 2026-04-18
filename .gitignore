@@ -1,0 +1,51 @@
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+.pnp.*
+.yarn/
+
+# ── Build output ──────────────────────────────────────────
+.next/
+dist/
+build/
+out/
+
+# ── Environment secrets ───────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# DO NOT ignore *.example — those are templates committed as-is
+!.env.example
+!.env.local.example
+
+# ── Docker local overrides ────────────────────────────────
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ── Logs & debugging ──────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ── Databases / uploads ───────────────────────────────────
+*.sqlite
+*.db
+uploads/
+data/
+
+# ── IDE & OS ──────────────────────────────────────────────
+.vscode/
+!.vscode/settings.json.example
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Testing ──────────────────────────────────────────────-
+coverage/
+.nyc_output/

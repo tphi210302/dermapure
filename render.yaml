@@ -1,0 +1,38 @@
+# Render.com blueprint — deploy this file: render.com/new/blueprint
+# Chỉ deploy backend. Frontend deploy ở Vercel (free tier tốt hơn cho Next.js).
+
+services:
+  - type: web
+    name: dermapure-backend
+    env: node
+    region: singapore                # Gần Việt Nam nhất
+    plan: free                       # 750h/tháng, sleep sau 15p idle
+    rootDir: backend
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGO_URI
+        sync: false                  # Điền thủ công trên dashboard (MongoDB Atlas URI)
+      - key: JWT_SECRET
+        generateValue: true          # Render tự sinh random 32+ chars
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX
+        value: 1000
+      - key: CLIENT_ORIGIN
+        sync: false                  # Điền sau khi deploy Vercel xong (VD: https://dermapure.vercel.app)
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
