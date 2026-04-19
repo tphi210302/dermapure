@@ -19,8 +19,8 @@ router.get('/slug/:slug',     ctrl.getBySlug);
 router.get('/:id',            ctrl.getById);
 
 // Admin
-router.post('/',        protect, authorize('admin'), ctrl.create);
-router.patch('/:id',    protect, authorize('admin'), ctrl.update);
-router.delete('/:id',   protect, authorize('admin'), ctrl.remove);
+router.post('/',        protect, authorize('admin', 'staff'), ctrl.create);
+router.patch('/:id',    protect, authorize('admin', 'staff'), ctrl.update);
+router.delete('/:id',   protect, authorize('admin', 'staff'), ctrl.remove);
 
 module.exports = router;

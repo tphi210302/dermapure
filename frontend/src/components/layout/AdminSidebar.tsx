@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 const DashIcon = () => (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,13 +51,13 @@ const BundleIcon = () => (
 );
 
 const nav = [
-  { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon    },
-  { href: '/admin/content',    label: 'Nội dung trang',   Icon: ContentIcon },
-  { href: '/admin/bundles',    label: 'Combo liệu trình', Icon: BundleIcon  },
-  { href: '/admin/products',   label: 'Sản phẩm',         Icon: ProdIcon    },
-  { href: '/admin/categories', label: 'Danh mục',         Icon: CatIcon     },
-  { href: '/admin/orders',     label: 'Đơn hàng',         Icon: OrderIcon   },
-  { href: '/admin/users',      label: 'Người dùng',       Icon: UserIcon    },
+  { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon,    adminOnly: false },
+  { href: '/admin/content',    label: 'Nội dung trang',   Icon: ContentIcon, adminOnly: true  },
+  { href: '/admin/bundles',    label: 'Combo liệu trình', Icon: BundleIcon,  adminOnly: false },
+  { href: '/admin/products',   label: 'Sản phẩm',         Icon: ProdIcon,    adminOnly: false },
+  { href: '/admin/categories', label: 'Danh mục',         Icon: CatIcon,     adminOnly: false },
+  { href: '/admin/orders',     label: 'Đơn hàng',         Icon: OrderIcon,   adminOnly: false },
+  { href: '/admin/users',      label: 'Người dùng',       Icon: UserIcon,    adminOnly: true  },
 ];
 
 interface Props {
@@ -66,6 +67,9 @@ interface Props {
 
 export default function AdminSidebar({ open = false, onClose }: Props) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const visibleNav = nav.filter((n) => !n.adminOnly || isAdmin);
 
   return (
     <>
@@ -105,7 +109,7 @@ export default function AdminSidebar({ open = false, onClose }: Props) {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-3 mb-2">Quản lý</p>
-          {nav.map(({ href, label, Icon }) => {
+          {visibleNav.map(({ href, label, Icon }) => {
             const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
             return (
               <Link

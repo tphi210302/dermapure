@@ -329,7 +329,7 @@ export default function Navbar() {
                       </div>
                     </div>
                     <div className="py-1">
-                      {user?.role === 'admin' && (
+                      {(user?.role === 'admin' || user?.role === 'staff') && (
                         <Link href="/admin" onClick={() => setUserMenuOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700
                                      hover:bg-primary-50 hover:text-primary-700 transition-colors">
@@ -472,7 +472,7 @@ export default function Navbar() {
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
                   <span className="text-lg">📦</span> Đơn hàng của tôi
                 </Link>
-                {user?.role === 'admin' && (
+                {(user?.role === 'admin' || user?.role === 'staff') && (
                   <Link href="/admin" onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors">
                     <span className="text-lg">📊</span> Trang quản trị

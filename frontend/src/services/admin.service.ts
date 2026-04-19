@@ -6,6 +6,15 @@ export const adminService = {
   getUsers: (params?: { page?: number; limit?: number; search?: string; role?: string }) =>
     api.get('/users', { params }),
 
+  createUser: (data: {
+    name: string;
+    email?: string;
+    phone: string;
+    password: string;
+    role?: 'customer' | 'staff' | 'admin';
+    isActive?: boolean;
+  }) => api.post('/users', data),
+
   updateUser: (id: string, data: Record<string, unknown>) =>
     api.patch(`/users/${id}`, data),
 

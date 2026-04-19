@@ -5,8 +5,9 @@ const asyncHandler = require('../../utils/asyncHandler');
 const ApiResponse = require('../../utils/ApiResponse');
 
 const getAll = asyncHandler(async (req, res) => {
-  // Admins can see inactive products
-  if (req.user?.role !== 'admin') {
+  // Admin + staff can see inactive products
+  const isStaffOrAdmin = req.user?.role === 'admin' || req.user?.role === 'staff';
+  if (!isStaffOrAdmin) {
     req.query.isActive = 'true';
   }
   const result = await productService.getAll(req.query);

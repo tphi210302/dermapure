@@ -15,8 +15,8 @@ router.get('/auto', protect, ctrl.auto);
 router.post('/apply', protect, ctrl.apply);
 
 // Admin CRUD
-router.post('/',     protect, authorize('admin'), ctrl.create);
-router.patch('/:id', protect, authorize('admin'), ctrl.update);
-router.delete('/:id', protect, authorize('admin'), ctrl.remove);
+router.post('/',     protect, authorize('admin', 'staff'), ctrl.create);
+router.patch('/:id', protect, authorize('admin', 'staff'), ctrl.update);
+router.delete('/:id', protect, authorize('admin', 'staff'), ctrl.remove);
 
 module.exports = router;

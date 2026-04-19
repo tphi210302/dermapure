@@ -18,6 +18,7 @@ const schema = require('./user.validation');
 router.patch('/me', protect, validate(schema.updateProfile), ctrl.updateProfile);
 
 // ── Admin ─────────────────────────────────────────────────
+router.post('/',   protect, authorize('admin'), validate(schema.adminCreateUser), ctrl.createUser);
 router.get('/',    protect, authorize('admin'), ctrl.getAllUsers);
 router.get('/:id', protect, authorize('admin'), ctrl.getUserById);
 router.patch('/:id', protect, authorize('admin'), validate(schema.adminUpdateUser), ctrl.updateUser);

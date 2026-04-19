@@ -17,10 +17,19 @@ const updateProfile = Joi.object({
 
 const adminUpdateUser = Joi.object({
   name:     Joi.string().min(2).max(80).optional(),
-  role:     Joi.string().valid('customer', 'admin').optional(),
+  role:     Joi.string().valid('customer', 'staff', 'admin').optional(),
   isActive: Joi.boolean().optional(),
   phone:    Joi.string().pattern(/^[0-9+\-\s()]{7,20}$/).optional(),
   password: Joi.string().min(6).optional(),
 });
 
-module.exports = { updateProfile, adminUpdateUser };
+const adminCreateUser = Joi.object({
+  name:     Joi.string().min(2).max(80).required(),
+  email:    Joi.string().email().allow('').optional(),
+  phone:    Joi.string().pattern(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/).required(),
+  password: Joi.string().min(8).required(),
+  role:     Joi.string().valid('customer', 'staff', 'admin').default('staff'),
+  isActive: Joi.boolean().default(true),
+});
+
+module.exports = { updateProfile, adminUpdateUser, adminCreateUser };

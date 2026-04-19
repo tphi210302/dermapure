@@ -10,9 +10,9 @@ router.get('/', ctrl.getAll);
 router.get('/:id', ctrl.getById);
 
 // Admin CRUD
-router.post('/',         protect, authorize('admin'), ctrl.create);
-router.patch('/:id',     protect, authorize('admin'), ctrl.update);
-router.delete('/:id',    protect, authorize('admin'), ctrl.remove);
-router.post('/reorder',  protect, authorize('admin'), ctrl.reorder);
+router.post('/',         protect, authorize('admin', 'staff'), ctrl.create);
+router.patch('/:id',     protect, authorize('admin', 'staff'), ctrl.update);
+router.delete('/:id',    protect, authorize('admin', 'staff'), ctrl.remove);
+router.post('/reorder',  protect, authorize('admin', 'staff'), ctrl.reorder);
 
 module.exports = router;

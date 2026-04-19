@@ -66,8 +66,8 @@ router.get('/:id', ctrl.getById);
  *     responses:
  *       201: { description: Created }
  */
-router.post('/', protect, authorize('admin'), validate(schema.create), ctrl.create);
-router.patch('/:id', protect, authorize('admin'), validate(schema.update), ctrl.update);
-router.delete('/:id', protect, authorize('admin'), ctrl.remove);
+router.post('/', protect, authorize('admin', 'staff'), validate(schema.create), ctrl.create);
+router.patch('/:id', protect, authorize('admin', 'staff'), validate(schema.update), ctrl.update);
+router.delete('/:id', protect, authorize('admin', 'staff'), ctrl.remove);
 
 module.exports = router;

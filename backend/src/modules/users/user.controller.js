@@ -4,6 +4,11 @@ const userService = require('./user.service');
 const asyncHandler = require('../../utils/asyncHandler');
 const ApiResponse = require('../../utils/ApiResponse');
 
+const createUser = asyncHandler(async (req, res) => {
+  const user = await userService.createUser(req.body);
+  return ApiResponse.created(res, user, 'User created');
+});
+
 const getAllUsers = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, search = '', role = '' } = req.query;
   const result = await userService.getAllUsers({ page, limit, search, role });
@@ -30,4 +35,4 @@ const updateProfile = asyncHandler(async (req, res) => {
   return ApiResponse.ok(res, user, 'Profile updated');
 });
 
-module.exports = { getAllUsers, getUserById, updateUser, deleteUser, updateProfile };
+module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser, updateProfile };

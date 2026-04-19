@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['customer', 'admin'],
+      enum: ['customer', 'staff', 'admin'],
       default: 'customer',
     },
     phone: {
@@ -110,7 +110,7 @@ const LOCK_DURATIONS = [1, 5, 15, 30, 60];
  * Returns { message } if account just got locked, null otherwise.
  */
 userSchema.methods.incrementLoginAttempts = async function () {
-  const maxAttempts = this.role === 'admin' ? 3 : 5;
+  const maxAttempts = (this.role === 'admin' || this.role === 'staff') ? 3 : 5;
 
   // Previous lock expired → reset attempts (keep lockCount for progressive duration)
   if (this.lockUntil && this.lockUntil < Date.now()) {

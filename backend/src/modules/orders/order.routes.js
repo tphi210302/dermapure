@@ -81,7 +81,7 @@ router.get('/:id', ctrl.getOrderById);
  *     responses:
  *       200: { description: Paginated orders }
  */
-router.get('/', authorize('admin'), ctrl.getAllOrders);
+router.get('/', authorize('admin', 'staff'), ctrl.getAllOrders);
 
 /**
  * @swagger
@@ -104,7 +104,7 @@ router.get('/', authorize('admin'), ctrl.getAllOrders);
  *       200: { description: Updated order }
  */
 router.patch('/:id/cancel', ctrl.cancelOrder);
-router.patch('/:id/status', authorize('admin'), validate(schema.updateStatus), ctrl.updateStatus);
+router.patch('/:id/status', authorize('admin', 'staff'), validate(schema.updateStatus), ctrl.updateStatus);
 router.delete('/:id', authorize('admin'), ctrl.deleteOrder);
 
 module.exports = router;

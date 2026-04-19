@@ -23,6 +23,14 @@ export default function AdminUsersPage() {
   const [showResetPw, setShowResetPw] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
+  // Create-user state
+  const [createOpen,    setCreateOpen]    = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [showCreatePw,  setShowCreatePw]  = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '', email: '', phone: '', password: '', role: 'staff' as 'staff' | 'admin' | 'customer',
+  });
+
   const fetchUsers = (p = page, q = search) => {
     setLoading(true);
     adminService.getUsers({ page: p, limit: 15, search: q })
@@ -74,6 +82,38 @@ export default function AdminUsersPage() {
     setResetPw('');
   };
 
+  const resetCreateForm = () => {
+    setNewUser({ name: '', email: '', phone: '', password: '', role: 'staff' });
+    setShowCreatePw(false);
+  };
+
+  const handleCreateUser = async () => {
+    const { name, phone, password, email, role } = newUser;
+    if (!name.trim() || name.trim().length < 2) { toast.error('Họ tên tối thiểu 2 ký tự'); return; }
+    if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) { toast.error('SĐT không hợp lệ (vd: 0912345678)'); return; }
+    if (password.length < 8) { toast.error('Mật khẩu tối thiểu 8 ký tự'); return; }
+    if (email && !/^\S+@\S+\.\S+$/.test(email.trim())) { toast.error('Email không hợp lệ'); return; }
+
+    setCreateLoading(true);
+    try {
+      await adminService.createUser({
+        name: name.trim(),
+        phone: phone.trim(),
+        password,
+        role,
+        ...(email.trim() && { email: email.trim() }),
+      });
+      toast.success(`Đã tạo tài khoản ${role === 'staff' ? 'nhân viên' : role} thành công`);
+      setCreateOpen(false);
+      resetCreateForm();
+      fetchUsers(page, search);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   const handleResetPassword = async () => {
     if (!resetId) return;
     if (resetPw.length < 6) {
@@ -96,11 +136,133 @@ export default function AdminUsersPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-xl font-bold text-gray-900">Người dùng</h2>
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <Input placeholder="Tìm tên hoặc email…" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <Button type="submit" variant="secondary">Tìm kiếm</Button>
-        </form>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="px-3 py-2 text-xs sm:text-sm font-bold text-white rounded-xl shadow-sm hover:shadow active:scale-[0.98] flex items-center gap-1.5"
+            style={{ background: 'linear-gradient(135deg,#e11d48,#f43f5e)' }}
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+            Tạo tài khoản
+          </button>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <Input placeholder="Tìm tên hoặc email…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Button type="submit" variant="secondary">Tìm kiếm</Button>
+          </form>
+        </div>
       </div>
+
+      {/* Create user modal */}
+      {createOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-10 w-10 bg-rose-100 rounded-full flex items-center justify-center text-xl">👥</div>
+              <div>
+                <h3 className="font-extrabold text-gray-900 text-lg">Tạo tài khoản mới</h3>
+                <p className="text-xs text-gray-500">Cấp quyền cho nhân viên hoặc admin</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Vai trò *</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['staff', 'admin', 'customer'] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setNewUser((p) => ({ ...p, role: r }))}
+                      className={`py-2 px-2 text-xs font-bold rounded-xl border-2 transition-all ${
+                        newUser.role === r
+                          ? 'border-rose-500 bg-rose-50 text-rose-700'
+                          : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {r === 'staff' ? '👔 Nhân viên' : r === 'admin' ? '🛡️ Admin' : '🛒 Khách'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Họ và tên *</label>
+                <input
+                  className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-rose-400 focus:outline-none"
+                  placeholder="Nguyễn Văn A"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Số điện thoại *</label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-rose-400 focus:outline-none"
+                  placeholder="0912345678"
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser((p) => ({ ...p, phone: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Email (tùy chọn)</label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-rose-400 focus:outline-none"
+                  placeholder="staff@dermapure.com"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Mật khẩu * (≥8 ký tự)</label>
+                <div className="relative">
+                  <input
+                    type={showCreatePw ? 'text' : 'password'}
+                    className="w-full px-3 py-2.5 pr-10 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-rose-400 focus:outline-none"
+                    placeholder="••••••••"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCreatePw((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showCreatePw ? '🙈' : '👁'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => { setCreateOpen(false); resetCreateForm(); }}
+                disabled={createLoading}
+                className="flex-1 py-2.5 font-bold rounded-xl border-2 border-gray-200 text-gray-700 hover:bg-gray-50 text-sm disabled:opacity-60"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateUser}
+                disabled={createLoading}
+                className="flex-1 py-2.5 font-extrabold text-white rounded-xl shadow-lg text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(135deg,#e11d48,#f43f5e)' }}
+              >
+                {createLoading ? 'Đang tạo…' : '✓ Tạo tài khoản'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center py-20"><Spinner size="lg" /></div>
@@ -192,7 +354,7 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="py-3 pr-4">
-                      <span className={u.role === 'admin' ? 'badge badge-blue' : 'badge badge-gray'}>{u.role}</span>
+                      <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
                     </td>
                     <td className="py-3 pr-4">
                       <span className={u.isActive ? 'badge-green' : 'badge-red'}>{u.isActive ? 'Hoạt động' : 'Tắt'}</span>
@@ -234,7 +396,7 @@ export default function AdminUsersPage() {
                     <p className="font-bold text-gray-900 truncate">{u.name}</p>
                     <p className="text-xs text-gray-500 truncate">{u.email || u.phone || '—'}</p>
                     <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                      <span className={u.role === 'admin' ? 'badge badge-blue' : 'badge badge-gray'}>{u.role}</span>
+                      <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
                       <span className={u.isActive ? 'badge-green' : 'badge-red'}>{u.isActive ? 'Hoạt động' : 'Tắt'}</span>
                       <span className="text-[10px] text-gray-400 self-center">· {formatDate(u.createdAt)}</span>
                     </div>

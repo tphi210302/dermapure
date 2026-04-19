@@ -3,6 +3,19 @@
 const User = require('./user.model');
 const ApiError = require('../../utils/ApiError');
 
+const createUser = async (data) => {
+  // Guard: email/phone uniqueness
+  if (data.email) {
+    const byEmail = await User.findOne({ email: data.email.toLowerCase() });
+    if (byEmail) throw ApiError.badRequest('Email đã được sử dụng');
+  }
+  const byPhone = await User.findOne({ phone: data.phone });
+  if (byPhone) throw ApiError.badRequest('Số điện thoại đã được sử dụng');
+
+  const user = await User.create(data);
+  return user.toSafeObject();
+};
+
 const getAllUsers = async ({ page = 1, limit = 20, search = '', role = '' }) => {
   const query = {};
   if (search) {
@@ -47,4 +60,4 @@ const updateProfile = async (userId, data) => {
   return user.toSafeObject();
 };
 
-module.exports = { getAllUsers, getUserById, updateUser, deleteUser, updateProfile };
+module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser, updateProfile };

@@ -21,16 +21,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const warnTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef        = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const isStaffOrAdmin = user?.role === 'admin' || user?.role === 'staff';
+
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) router.replace('/login?redirect=/admin');
-      else if (user?.role !== 'admin') router.replace('/');
+      else if (!isStaffOrAdmin) router.replace('/');
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [isLoading, isAuthenticated, isStaffOrAdmin, router]);
 
-  // Idle-timeout auto logout (admin only)
+  // Idle-timeout auto logout (admin + staff)
   useEffect(() => {
-    if (user?.role !== 'admin') return;
+    if (!isStaffOrAdmin) return;
 
     const clearTimers = () => {
       if (logoutTimerRef.current) { clearTimeout(logoutTimerRef.current); logoutTimerRef.current = null; }
@@ -72,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       activityEvents.forEach((e) => window.removeEventListener(e, onActivity));
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.role]);
+  }, [isStaffOrAdmin]);
 
   const stayLoggedIn = () => {
     if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
@@ -96,7 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Auto-close sidebar when route changes (mobile)
   useEffect(() => { setSidebarOpen(false); }, [pathname]);
 
-  if (isLoading || !isAuthenticated || user?.role !== 'admin') {
+  if (isLoading || !isAuthenticated || !isStaffOrAdmin) {
     return <div className="flex items-center justify-center min-h-screen"><Spinner size="lg" /></div>;
   }
 

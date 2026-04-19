@@ -6,7 +6,7 @@ const ApiResponse = require('../../utils/ApiResponse');
 
 const getAll = asyncHandler(async (req, res) => {
   const { solutionType } = req.query;
-  const includeInactive = req.user?.role === 'admin';
+  const includeInactive = req.user?.role === 'admin' || req.user?.role === 'staff';
   const bundles = await bundleService.getAll({ solutionType, includeInactive });
   return ApiResponse.ok(res, bundles);
 });
