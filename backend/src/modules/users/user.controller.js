@@ -35,4 +35,17 @@ const updateProfile = asyncHandler(async (req, res) => {
   return ApiResponse.ok(res, user, 'Profile updated');
 });
 
-module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser, updateProfile };
+const getMyAffiliate = asyncHandler(async (req, res) => {
+  const stats = await userService.getMyAffiliateStats(req.user.id);
+  return ApiResponse.ok(res, stats);
+});
+
+const getAffiliateLeaderboard = asyncHandler(async (req, res) => {
+  const rows = await userService.getAffiliateLeaderboard();
+  return ApiResponse.ok(res, rows);
+});
+
+module.exports = {
+  createUser, getAllUsers, getUserById, updateUser, deleteUser,
+  updateProfile, getMyAffiliate, getAffiliateLeaderboard,
+};

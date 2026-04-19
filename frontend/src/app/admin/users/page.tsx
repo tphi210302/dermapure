@@ -354,7 +354,12 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="py-3 pr-4">
-                      <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
+                        {u.affiliateCode && (u.role === 'staff' || u.role === 'admin') && (
+                          <span className="font-mono text-[10px] font-bold text-rose-600" title="Mã giới thiệu">🎯 {u.affiliateCode}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 pr-4">
                       <span className={u.isActive ? 'badge-green' : 'badge-red'}>{u.isActive ? 'Hoạt động' : 'Tắt'}</span>

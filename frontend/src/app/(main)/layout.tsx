@@ -1,12 +1,15 @@
+import { Suspense } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import BottomNav from '@/components/layout/BottomNav';
 import MiniCart from '@/components/ui/MiniCart';
 import FloatContact from '@/components/ui/FloatContact';
+import AffiliateCapture from '@/components/affiliate/AffiliateCapture';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
+      <Suspense fallback={null}><AffiliateCapture /></Suspense>
       <Navbar />
       <main className="flex-1 pb-16 md:pb-0">{children}</main>
       <Footer />

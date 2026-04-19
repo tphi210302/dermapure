@@ -11,6 +11,7 @@ import { voucherService, type AppliedVoucher } from '@/services/voucher.service'
 import { getErrorMessage, formatPrice } from '@/lib/utils';
 import VietnamAddressPicker from '@/components/address/VietnamAddressPicker';
 import StreetAutocomplete from '@/components/address/StreetAutocomplete';
+import { readAffiliateRef, clearAffiliateRef } from '@/components/affiliate/AffiliateCapture';
 import toast from 'react-hot-toast';
 
 const SHIPPING_FEE      = 30000;
@@ -126,6 +127,7 @@ export default function CheckoutPage() {
     setShowConfirm(false);
     setLoading(true);
     try {
+      const affiliateCode = readAffiliateRef() || undefined;
       await orderService.checkout({
         shippingAddress: {
           recipientName: form.recipientName.trim(),
@@ -138,7 +140,9 @@ export default function CheckoutPage() {
         },
         note: form.note.trim() || undefined,
         voucherCode: voucher?.code,
+        affiliateCode,
       });
+      clearAffiliateRef();
       await Promise.all([refreshCart(), refreshUser()]);
       toast.success('Đặt hàng thành công! 🎉');
       router.push('/orders');

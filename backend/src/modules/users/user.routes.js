@@ -17,6 +17,10 @@ const schema = require('./user.validation');
 // ── Customer ──────────────────────────────────────────────
 router.patch('/me', protect, validate(schema.updateProfile), ctrl.updateProfile);
 
+// ── Staff/Admin: affiliate ────────────────────────────────
+router.get('/me/affiliate', protect, authorize('staff', 'admin'), ctrl.getMyAffiliate);
+router.get('/affiliate/leaderboard', protect, authorize('admin'), ctrl.getAffiliateLeaderboard);
+
 // ── Admin ─────────────────────────────────────────────────
 router.post('/',   protect, authorize('admin'), validate(schema.adminCreateUser), ctrl.createUser);
 router.get('/',    protect, authorize('admin'), ctrl.getAllUsers);

@@ -68,6 +68,24 @@ const orderSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Affiliate — which staff referred this order (via ?ref=CODE cookie at checkout)
+    affiliateStaff: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+      index: true,
+    },
+    affiliateCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+    },
+    // Handler — which staff last changed the order status (admin panel)
+    handledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
     shippingAddress: {
       type: addressSchema,
       required: true,

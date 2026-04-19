@@ -96,7 +96,14 @@ export default function AdminOrdersPage() {
                   <tr key={order._id} className="hover:bg-gray-50">
                     <td className="py-3 pr-4 font-mono text-xs text-gray-600">#{order._id.slice(-8).toUpperCase()}</td>
                     <td className="py-3 pr-4 text-gray-800">
-                      {order.user && typeof order.user === 'object' ? order.user.name : '—'}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span>{order.user && typeof order.user === 'object' ? order.user.name : '—'}</span>
+                        {order.affiliateStaff && (
+                          <span className="inline-flex items-center text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded px-1.5 py-0.5" title={`Giới thiệu bởi ${order.affiliateStaff.name}`}>
+                            🎯 {order.affiliateStaff.name}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 pr-4 text-gray-600">{order.items.length}</td>
                     <td className="py-3 pr-4 font-semibold">{formatPrice(order.totalAmount)}</td>
@@ -148,6 +155,9 @@ export default function AdminOrdersPage() {
                     <p className="font-semibold text-gray-900 truncate">
                       {order.user && typeof order.user === 'object' ? order.user.name : '—'}
                     </p>
+                    {order.affiliateStaff && (
+                      <p className="text-[10px] font-bold text-rose-700 mt-0.5">🎯 {order.affiliateStaff.name}</p>
+                    )}
                     <p className="text-[11px] text-gray-400">{formatDate(order.createdAt)}</p>
                   </div>
                   <span className={cn('shrink-0', ORDER_STATUS_BADGE[order.status])}>{ORDER_STATUS_LABELS[order.status]}</span>

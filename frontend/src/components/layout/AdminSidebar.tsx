@@ -50,6 +50,13 @@ const BundleIcon = () => (
   </svg>
 );
 
+const AffiliateIcon = () => (
+  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+  </svg>
+);
+
 const nav = [
   { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon,    adminOnly: false },
   { href: '/admin/content',    label: 'Nội dung trang',   Icon: ContentIcon, adminOnly: true  },
@@ -57,6 +64,7 @@ const nav = [
   { href: '/admin/products',   label: 'Sản phẩm',         Icon: ProdIcon,    adminOnly: false },
   { href: '/admin/categories', label: 'Danh mục',         Icon: CatIcon,     adminOnly: false },
   { href: '/admin/orders',     label: 'Đơn hàng',         Icon: OrderIcon,   adminOnly: false },
+  { href: '/admin/affiliate',  label: 'Giới thiệu',       Icon: AffiliateIcon, adminOnly: false },
   { href: '/admin/users',      label: 'Người dùng',       Icon: UserIcon,    adminOnly: true  },
 ];
 

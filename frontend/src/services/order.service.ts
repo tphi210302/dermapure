@@ -2,7 +2,7 @@ import api from '@/lib/axios';
 import { Address } from '@/types';
 
 export const orderService = {
-  checkout: (payload: { shippingAddress: Address; note?: string; voucherCode?: string }) =>
+  checkout: (payload: { shippingAddress: Address; note?: string; voucherCode?: string; affiliateCode?: string }) =>
     api.post('/orders/checkout', payload),
 
   getMyOrders: (params?: { page?: number; limit?: number }) =>

@@ -11,12 +11,14 @@ const SHIPPING_FEE      = 30000;  // 30K flat
 const FREE_SHIPPING_MIN = 500000; // free over 500K
 
 const populateOrder = [
-  { path: 'user',          select: 'name email phone' },
-  { path: 'items.product', select: 'name images price brand unit' },
+  { path: 'user',           select: 'name email phone' },
+  { path: 'items.product',  select: 'name images price brand unit' },
+  { path: 'affiliateStaff', select: 'name email affiliateCode role' },
+  { path: 'handledBy',      select: 'name email role' },
 ];
 
 // ── Checkout ───────────────────────────────────────────────
-const checkout = async (userId, { shippingAddress, note, voucherCode }) => {
+const checkout = async (userId, { shippingAddress, note, voucherCode, affiliateCode }) => {
   // 1. Load cart with populated products
   const cart = await Cart.findOne({ user: userId }).populate('items.product');
 
@@ -68,6 +70,22 @@ const checkout = async (userId, { shippingAddress, note, voucherCode }) => {
     await decrementStock(item.product._id, item.quantity, null);
   }
 
+  // 5b. Resolve affiliate code → staff user (ignore if not found, don't fail order)
+  let affiliateStaff = null;
+  let resolvedAffiliateCode = null;
+  if (affiliateCode) {
+    const code = affiliateCode.trim().toUpperCase();
+    const staff = await User.findOne({
+      affiliateCode: code,
+      role: { $in: ['staff', 'admin'] },
+      isActive: true,
+    }).select('_id affiliateCode');
+    if (staff && staff._id.toString() !== userId.toString()) {
+      affiliateStaff = staff._id;
+      resolvedAffiliateCode = staff.affiliateCode;
+    }
+  }
+
   // 6. Create order
   const order = await Order.create({
     user: userId,
@@ -80,6 +98,8 @@ const checkout = async (userId, { shippingAddress, note, voucherCode }) => {
     totalAmount,
     shippingAddress,
     note,
+    affiliateStaff,
+    affiliateCode: resolvedAffiliateCode,
   });
 
   // 7. Mark voucher used + clear cart
@@ -157,6 +177,7 @@ const updateStatus = async (id, status, { changedBy, note, trackingCode } = {}) 
     order.statusHistory.push({ status, changedBy, note, changedAt: new Date() });
   }
   if (trackingCode !== undefined) order.trackingCode = trackingCode;
+  if (changedBy) order.handledBy = changedBy;
   await order.save();
   return order.populate(populateOrder);
 };

@@ -17,6 +17,7 @@ const checkout = Joi.object({
   }).required(),
   note: Joi.string().max(500).allow('').optional(),
   voucherCode: Joi.string().max(30).allow('').optional(),
+  affiliateCode: Joi.string().max(30).allow('').optional(),
 });
 
 const updateStatus = Joi.object({

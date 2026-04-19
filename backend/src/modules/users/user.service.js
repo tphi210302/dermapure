@@ -1,6 +1,7 @@
 'use strict';
 
 const User = require('./user.model');
+const Order = require('../orders/order.model');
 const ApiError = require('../../utils/ApiError');
 
 const createUser = async (data) => {
@@ -60,4 +61,75 @@ const updateProfile = async (userId, data) => {
   return user.toSafeObject();
 };
 
-module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser, updateProfile };
+// Affiliate stats for the logged-in staff/admin
+const getMyAffiliateStats = async (userId) => {
+  const user = await User.findById(userId).select('name email role affiliateCode');
+  if (!user) throw ApiError.notFound('User not found');
+  if (user.role !== 'staff' && user.role !== 'admin') {
+    throw ApiError.forbidden('Affiliate is only available for staff/admin');
+  }
+
+  // Aggregate orders referred by this user — excluded cancelled
+  const pipeline = [
+    { $match: { affiliateStaff: user._id, status: { $ne: 'cancelled' } } },
+    {
+      $group: {
+        _id: null,
+        orderCount:   { $sum: 1 },
+        totalRevenue: { $sum: '$totalAmount' },
+      },
+    },
+  ];
+  const [agg] = await Order.aggregate(pipeline);
+  const orderCount   = agg?.orderCount   || 0;
+  const totalRevenue = agg?.totalRevenue || 0;
+
+  return {
+    code:         user.affiliateCode,
+    orderCount,
+    totalRevenue,
+    user: { name: user.name, email: user.email, role: user.role },
+  };
+};
+
+// Admin — aggregate referrals grouped by staff (leaderboard)
+const getAffiliateLeaderboard = async () => {
+  const pipeline = [
+    { $match: { affiliateStaff: { $ne: null }, status: { $ne: 'cancelled' } } },
+    {
+      $group: {
+        _id: '$affiliateStaff',
+        orderCount:   { $sum: 1 },
+        totalRevenue: { $sum: '$totalAmount' },
+      },
+    },
+    { $sort: { totalRevenue: -1 } },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'staff',
+      },
+    },
+    { $unwind: '$staff' },
+    {
+      $project: {
+        _id: 0,
+        staffId:      '$_id',
+        name:         '$staff.name',
+        email:        '$staff.email',
+        role:         '$staff.role',
+        affiliateCode:'$staff.affiliateCode',
+        orderCount:   1,
+        totalRevenue: 1,
+      },
+    },
+  ];
+  return Order.aggregate(pipeline);
+};
+
+module.exports = {
+  createUser, getAllUsers, getUserById, updateUser, deleteUser,
+  updateProfile, getMyAffiliateStats, getAffiliateLeaderboard,
+};

@@ -7,6 +7,7 @@ export interface User {
   phone?: string;
   address?: Address;
   isActive: boolean;
+  affiliateCode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -134,6 +135,9 @@ export interface Order {
   trackingCode?: string;
   shippingAddress: Address;
   note?: string;
+  affiliateStaff?: Pick<User, '_id' | 'name' | 'email' | 'role' | 'affiliateCode'> | null;
+  affiliateCode?: string;
+  handledBy?: Pick<User, '_id' | 'name' | 'email' | 'role'> | null;
   createdAt: string;
   updatedAt: string;
 }

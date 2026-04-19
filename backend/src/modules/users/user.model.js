@@ -55,6 +55,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Affiliate code — auto-generated for staff/admin on creation
+    affiliateCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      uppercase: true,
+      trim: true,
+    },
     refreshToken: {
       type: String,
       select: false,
@@ -84,6 +92,17 @@ const userSchema = new mongoose.Schema(
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+// ── Auto-generate affiliateCode for staff/admin on creation ───
+userSchema.pre('save', async function (next) {
+  if (!this.isNew || this.affiliateCode) return next();
+  if (this.role !== 'staff' && this.role !== 'admin') return next();
+  const base = (this.name || 'STAFF').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase() || 'STAFF';
+  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  this.affiliateCode = `${base}${suffix}`;
   next();
 });
 

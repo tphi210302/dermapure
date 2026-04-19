@@ -126,6 +126,29 @@ export default function AdminOrderDetailPage() {
             </div>
           )}
 
+          {/* Affiliate + handler */}
+          {(order.affiliateStaff || order.handledBy) && (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-5 space-y-3">
+              {order.affiliateStaff && (
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">🎯 Nhân viên giới thiệu</p>
+                  <p className="font-bold text-gray-900">{order.affiliateStaff.name}</p>
+                  <p className="text-xs text-gray-500">
+                    <span className="font-mono font-bold text-rose-600">{order.affiliateStaff.affiliateCode}</span>
+                    {' · '}{order.affiliateStaff.email}
+                  </p>
+                </div>
+              )}
+              {order.handledBy && (
+                <div className={order.affiliateStaff ? 'pt-3 border-t border-gray-100' : ''}>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">👷 Nhân viên xử lý</p>
+                  <p className="font-bold text-gray-900">{order.handledBy.name}</p>
+                  <p className="text-xs text-gray-500">{order.handledBy.email} · {order.handledBy.role}</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Shipping address */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-5">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Địa chỉ giao hàng</p>
