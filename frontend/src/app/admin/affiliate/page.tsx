@@ -142,7 +142,7 @@ export default function AffiliatePage() {
                       </td>
                       <td className="px-4 py-3 font-mono text-xs font-bold text-rose-600">{r.affiliateCode}</td>
                       <td className="px-4 py-3">
-                        <span className={r.role === 'admin' ? 'badge badge-blue' : 'badge badge-green'}>{r.role}</span>
+                        <span className={r.role === 'admin' ? 'badge badge-blue' : r.role === 'staff' ? 'badge badge-green' : 'badge badge-yellow'}>{r.role}</span>
                       </td>
                       <td className="px-4 py-3 text-right font-bold">{r.orderCount}</td>
                       <td className="px-4 py-3 text-right font-bold text-rose-600">{formatPrice(r.totalRevenue)}</td>

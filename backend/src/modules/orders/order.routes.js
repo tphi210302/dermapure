@@ -81,7 +81,7 @@ router.get('/:id', ctrl.getOrderById);
  *     responses:
  *       200: { description: Paginated orders }
  */
-router.get('/', authorize('admin', 'staff'), ctrl.getAllOrders);
+router.get('/', authorize('admin', 'staff', 'sales'), ctrl.getAllOrders);
 
 /**
  * @swagger

@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['customer', 'staff', 'admin'],
+      enum: ['customer', 'sales', 'staff', 'admin'],
       default: 'customer',
     },
     phone: {
@@ -98,7 +98,7 @@ userSchema.pre('save', async function (next) {
 // ── Auto-generate affiliateCode for staff/admin on creation ───
 userSchema.pre('save', async function (next) {
   if (!this.isNew || this.affiliateCode) return next();
-  if (this.role !== 'staff' && this.role !== 'admin') return next();
+  if (this.role !== 'staff' && this.role !== 'admin' && this.role !== 'sales') return next();
   const base = (this.name || 'STAFF').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase() || 'STAFF';
   const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
@@ -129,7 +129,7 @@ const LOCK_DURATIONS = [1, 5, 15, 30, 60];
  * Returns { message } if account just got locked, null otherwise.
  */
 userSchema.methods.incrementLoginAttempts = async function () {
-  const maxAttempts = (this.role === 'admin' || this.role === 'staff') ? 3 : 5;
+  const maxAttempts = (this.role === 'admin' || this.role === 'staff' || this.role === 'sales') ? 3 : 5;
 
   // Previous lock expired → reset attempts (keep lockCount for progressive duration)
   if (this.lockUntil && this.lockUntil < Date.now()) {

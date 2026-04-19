@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const warnTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickRef        = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isStaffOrAdmin = user?.role === 'admin' || user?.role === 'staff';
+  const isStaffOrAdmin = user?.role === 'admin' || user?.role === 'staff' || user?.role === 'sales';
 
   useEffect(() => {
     if (!isLoading) {

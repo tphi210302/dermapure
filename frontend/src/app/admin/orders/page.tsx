@@ -6,6 +6,7 @@ import { Order, OrderStatus, PaginatedResponse } from '@/types';
 import { orderService } from '@/services/order.service';
 import { formatPrice, formatDate, ORDER_STATUS_LABELS, ORDER_STATUS_BADGE } from '@/lib/utils';
 import { cn, getErrorMessage } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 import Spinner from '@/components/ui/Spinner';
 import PaginationComp from '@/components/ui/Pagination';
 import toast from 'react-hot-toast';
@@ -13,6 +14,8 @@ import toast from 'react-hot-toast';
 const STATUS_OPTIONS: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 export default function AdminOrdersPage() {
+  const { user } = useAuth();
+  const canEdit = user?.role === 'admin' || user?.role === 'staff';
   const [orders, setOrders]         = useState<Order[]>([]);
   const [pagination, setPagination] = useState<PaginatedResponse<Order>['data']['pagination'] | null>(null);
   const [loading, setLoading]       = useState(true);
@@ -116,7 +119,7 @@ export default function AdminOrdersPage() {
                         className="input text-xs py-1 w-32"
                         value={order.status}
                         onChange={(e) => updateStatus(order._id, e.target.value as OrderStatus)}
-                        disabled={order.status === 'delivered' || order.status === 'cancelled'}
+                        disabled={!canEdit || order.status === 'delivered' || order.status === 'cancelled'}
                       >
                         {STATUS_OPTIONS.map((s) => (
                           <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>
@@ -180,7 +183,7 @@ export default function AdminOrdersPage() {
                     className="input text-xs py-2 w-full"
                     value={order.status}
                     onChange={(e) => updateStatus(order._id, e.target.value as OrderStatus)}
-                    disabled={order.status === 'delivered' || order.status === 'cancelled'}
+                    disabled={!canEdit || order.status === 'delivered' || order.status === 'cancelled'}
                   >
                     {STATUS_OPTIONS.map((s) => (
                       <option key={s} value={s}>{ORDER_STATUS_LABELS[s]}</option>

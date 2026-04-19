@@ -108,8 +108,8 @@ const buildAffiliateCode = async (name) => {
 const getMyAffiliateStats = async (userId) => {
   const user = await User.findById(userId).select('name email role affiliateCode');
   if (!user) throw ApiError.notFound('User not found');
-  if (user.role !== 'staff' && user.role !== 'admin') {
-    throw ApiError.forbidden('Affiliate is only available for staff/admin');
+  if (user.role !== 'staff' && user.role !== 'admin' && user.role !== 'sales') {
+    throw ApiError.forbidden('Affiliate is only available for staff/admin/sales');
   }
 
   // Backfill code for legacy staff/admin accounts created before affiliate feature

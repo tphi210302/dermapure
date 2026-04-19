@@ -57,15 +57,23 @@ const AffiliateIcon = () => (
   </svg>
 );
 
-const nav = [
-  { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon,    adminOnly: false },
-  { href: '/admin/content',    label: 'Nội dung trang',   Icon: ContentIcon, adminOnly: true  },
-  { href: '/admin/bundles',    label: 'Combo liệu trình', Icon: BundleIcon,  adminOnly: false },
-  { href: '/admin/products',   label: 'Sản phẩm',         Icon: ProdIcon,    adminOnly: false },
-  { href: '/admin/categories', label: 'Danh mục',         Icon: CatIcon,     adminOnly: false },
-  { href: '/admin/orders',     label: 'Đơn hàng',         Icon: OrderIcon,   adminOnly: false },
-  { href: '/admin/affiliate',  label: 'Giới thiệu',       Icon: AffiliateIcon, adminOnly: false },
-  { href: '/admin/users',      label: 'Người dùng',       Icon: UserIcon,    adminOnly: true  },
+type NavItem = {
+  href: string;
+  label: string;
+  Icon: () => JSX.Element;
+  // Whitelist of roles that see this item; if undefined → visible to all admin roles
+  roles?: Array<'admin' | 'staff' | 'sales'>;
+};
+
+const nav: NavItem[] = [
+  { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon                                                        },
+  { href: '/admin/content',    label: 'Nội dung trang',   Icon: ContentIcon,   roles: ['admin']                                 },
+  { href: '/admin/bundles',    label: 'Combo liệu trình', Icon: BundleIcon,    roles: ['admin', 'staff']                        },
+  { href: '/admin/products',   label: 'Sản phẩm',         Icon: ProdIcon,      roles: ['admin', 'staff']                        },
+  { href: '/admin/categories', label: 'Danh mục',         Icon: CatIcon,       roles: ['admin', 'staff']                        },
+  { href: '/admin/orders',     label: 'Đơn hàng',         Icon: OrderIcon                                                       },
+  { href: '/admin/affiliate',  label: 'Giới thiệu',       Icon: AffiliateIcon                                                   },
+  { href: '/admin/users',      label: 'Người dùng',       Icon: UserIcon,      roles: ['admin']                                 },
 ];
 
 interface Props {
@@ -76,8 +84,10 @@ interface Props {
 export default function AdminSidebar({ open = false, onClose }: Props) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
-  const visibleNav = nav.filter((n) => !n.adminOnly || isAdmin);
+  const role = (user?.role === 'admin' || user?.role === 'staff' || user?.role === 'sales') ? user.role : null;
+  const visibleNav = role
+    ? nav.filter((n) => !n.roles || n.roles.includes(role))
+    : [];
 
   return (
     <>

@@ -12,7 +12,7 @@ const { authorize } = require('../../middleware/role.middleware');
  *   description: Admin-only endpoints
  */
 
-router.use(protect, authorize('admin', 'staff'));
+router.use(protect, authorize('admin', 'staff', 'sales'));
 
 /**
  * @swagger

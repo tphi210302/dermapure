@@ -138,7 +138,7 @@ export default function ProfilePage() {
           <h1 className="text-xl font-extrabold truncate">{user.name}</h1>
           <p className="text-sm text-white/80 truncate">{user.phone || user.email}</p>
         </div>
-        {(user.role === 'admin' || user.role === 'staff') && (
+        {(user.role === 'admin' || user.role === 'staff' || user.role === 'sales') && (
           <Link href="/admin" className="px-4 py-2 text-xs font-bold bg-white text-rose-700 rounded-xl shadow-md hover:shadow-lg shrink-0">
             📊 Quản trị
           </Link>

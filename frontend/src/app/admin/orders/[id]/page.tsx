@@ -8,6 +8,7 @@ import { Order, OrderStatus, User } from '@/types';
 import { orderService } from '@/services/order.service';
 import { formatPrice, formatDate, ORDER_STATUS_LABELS, ORDER_STATUS_BADGE, cn } from '@/lib/utils';
 import Spinner from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
 const STATUS_OPTIONS: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -24,6 +25,8 @@ const STATUS_GRADIENT: Record<string, string> = {
 export default function AdminOrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user: currentUser } = useAuth();
+  const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'staff';
   const [order, setOrder]   = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
@@ -268,7 +271,13 @@ export default function AdminOrderDetailPage() {
               <span className="text-xl">⚡</span> Cập nhật đơn hàng
             </h3>
 
-            {isFinal ? (
+            {!canEdit ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <p className="text-sm font-semibold text-amber-800">
+                  👀 Chế độ chỉ xem — bạn là sales, không được phép cập nhật đơn
+                </p>
+              </div>
+            ) : isFinal ? (
               <div className="bg-gray-100 rounded-xl p-4 text-center">
                 <p className="text-sm font-semibold text-gray-500">
                   Đơn đã {order.status === 'delivered' ? 'hoàn thành' : 'bị hủy'} — không thể thay đổi

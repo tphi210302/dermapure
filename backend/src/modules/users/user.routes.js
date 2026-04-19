@@ -18,7 +18,7 @@ const schema = require('./user.validation');
 router.patch('/me', protect, validate(schema.updateProfile), ctrl.updateProfile);
 
 // ── Staff/Admin: affiliate ────────────────────────────────
-router.get('/me/affiliate', protect, authorize('staff', 'admin'), ctrl.getMyAffiliate);
+router.get('/me/affiliate', protect, authorize('sales', 'staff', 'admin'), ctrl.getMyAffiliate);
 router.get('/affiliate/leaderboard', protect, authorize('admin'), ctrl.getAffiliateLeaderboard);
 
 // ── Admin ─────────────────────────────────────────────────

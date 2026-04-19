@@ -21,7 +21,7 @@ const affiliateCodeRule = Joi.string()
 
 const adminUpdateUser = Joi.object({
   name:     Joi.string().min(2).max(80).optional(),
-  role:     Joi.string().valid('customer', 'staff', 'admin').optional(),
+  role:     Joi.string().valid('customer', 'sales', 'staff', 'admin').optional(),
   isActive: Joi.boolean().optional(),
   phone:    Joi.string().pattern(/^[0-9+\-\s()]{7,20}$/).optional(),
   password: Joi.string().min(8).optional(),
@@ -33,7 +33,7 @@ const adminCreateUser = Joi.object({
   email:    Joi.string().email().allow('').optional(),
   phone:    Joi.string().pattern(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/).required(),
   password: Joi.string().min(8).required(),
-  role:     Joi.string().valid('customer', 'staff', 'admin').default('staff'),
+  role:     Joi.string().valid('customer', 'sales', 'staff', 'admin').default('staff'),
   isActive: Joi.boolean().default(true),
   affiliateCode: affiliateCodeRule.allow('').optional(),
 });

@@ -28,7 +28,7 @@ export default function AdminUsersPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [showCreatePw,  setShowCreatePw]  = useState(false);
   const [newUser, setNewUser] = useState({
-    name: '', email: '', phone: '', password: '', role: 'staff' as 'staff' | 'admin' | 'customer', affiliateCode: '',
+    name: '', email: '', phone: '', password: '', role: 'sales' as 'sales' | 'staff' | 'admin' | 'customer', affiliateCode: '',
   });
 
   // Inline affiliate code edit
@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
   };
 
   const resetCreateForm = () => {
-    setNewUser({ name: '', email: '', phone: '', password: '', role: 'staff', affiliateCode: '' });
+    setNewUser({ name: '', email: '', phone: '', password: '', role: 'sales', affiliateCode: '' });
     setShowCreatePw(false);
   };
 
@@ -130,9 +130,9 @@ export default function AdminUsersPage() {
         password,
         role,
         ...(email.trim() && { email: email.trim() }),
-        ...(code && (role === 'staff' || role === 'admin') && { affiliateCode: code }),
+        ...(code && (role === 'sales' || role === 'staff' || role === 'admin') && { affiliateCode: code }),
       });
-      toast.success(`Đã tạo tài khoản ${role === 'staff' ? 'nhân viên' : role} thành công`);
+      toast.success(`Đã tạo tài khoản ${role === 'sales' ? 'sales' : role === 'staff' ? 'nhân viên' : role} thành công`);
       setCreateOpen(false);
       resetCreateForm();
       fetchUsers(page, search);
@@ -199,22 +199,29 @@ export default function AdminUsersPage() {
             <div className="space-y-3">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1.5">Vai trò *</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['staff', 'admin', 'customer'] as const).map((r) => (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(['sales', 'staff', 'admin', 'customer'] as const).map((r) => (
                     <button
                       key={r}
                       type="button"
                       onClick={() => setNewUser((p) => ({ ...p, role: r }))}
-                      className={`py-2 px-2 text-xs font-bold rounded-xl border-2 transition-all ${
+                      className={`py-2 px-2 text-[11px] font-bold rounded-xl border-2 transition-all ${
                         newUser.role === r
                           ? 'border-rose-500 bg-rose-50 text-rose-700'
                           : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
                       }`}
                     >
-                      {r === 'staff' ? '👔 Nhân viên' : r === 'admin' ? '🛡️ Admin' : '🛒 Khách'}
+                      {r === 'sales' ? '📣 Sales'
+                        : r === 'staff' ? '👔 Nhân viên'
+                        : r === 'admin' ? '🛡️ Admin'
+                        : '🛒 Khách'}
                     </button>
                   ))}
                 </div>
+                <p className="text-[10px] text-gray-400 mt-1.5">
+                  <strong>Sales:</strong> chỉ xem đơn + giới thiệu (không sửa sản phẩm).
+                  <strong className="ml-1">Nhân viên:</strong> toàn quyền vận hành.
+                </p>
               </div>
 
               <div>
@@ -269,7 +276,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              {(newUser.role === 'staff' || newUser.role === 'admin') && (
+              {(newUser.role === 'sales' || newUser.role === 'staff' || newUser.role === 'admin') && (
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
                     Mã giới thiệu (tùy chọn) <span className="text-[10px] font-normal text-gray-400">— để trống sẽ tự sinh</span>
@@ -399,8 +406,8 @@ export default function AdminUsersPage() {
 
                     <td className="py-3 pr-4">
                       <div className="flex flex-col gap-1">
-                        <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
-                        {(u.role === 'staff' || u.role === 'admin') && (
+                        <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : u.role === 'sales' ? 'badge badge-yellow' : 'badge badge-gray'}>{u.role}</span>
+                        {(u.role === 'sales' || u.role === 'staff' || u.role === 'admin') && (
                           codeEditId === u._id ? (
                             <div className="flex items-center gap-1">
                               <input
@@ -473,7 +480,7 @@ export default function AdminUsersPage() {
                     <p className="font-bold text-gray-900 truncate">{u.name}</p>
                     <p className="text-xs text-gray-500 truncate">{u.email || u.phone || '—'}</p>
                     <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                      <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
+                      <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : u.role === 'sales' ? 'badge badge-yellow' : 'badge badge-gray'}>{u.role}</span>
                       <span className={u.isActive ? 'badge-green' : 'badge-red'}>{u.isActive ? 'Hoạt động' : 'Tắt'}</span>
                       <span className="text-[10px] text-gray-400 self-center">· {formatDate(u.createdAt)}</span>
                     </div>

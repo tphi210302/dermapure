@@ -77,7 +77,7 @@ const checkout = async (userId, { shippingAddress, note, voucherCode, affiliateC
     const code = affiliateCode.trim().toUpperCase();
     const staff = await User.findOne({
       affiliateCode: code,
-      role: { $in: ['staff', 'admin'] },
+      role: { $in: ['sales', 'staff', 'admin'] },
       isActive: true,
     }).select('_id affiliateCode');
     if (staff && staff._id.toString() !== userId.toString()) {
@@ -140,7 +140,7 @@ const getOrderById = async (id, userId, role) => {
   const order = await Order.findById(id).populate(populateOrder);
   if (!order) throw ApiError.notFound('Order not found');
   // Customers can only see their own orders
-  const isStaffOrAdmin = role === 'admin' || role === 'staff';
+  const isStaffOrAdmin = role === 'admin' || role === 'staff' || role === 'sales';
   if (!isStaffOrAdmin && order.user._id.toString() !== userId) {
     throw ApiError.forbidden('Not authorised to view this order');
   }
