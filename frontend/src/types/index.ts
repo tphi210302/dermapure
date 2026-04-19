@@ -124,6 +124,11 @@ export interface Order {
   user: User | string;
   items: OrderItem[];
   totalAmount: number;
+  subtotal?: number;
+  shippingFee?: number;
+  discount?: number;
+  voucherCode?: string;
+  discountNote?: string;
   status: OrderStatus;
   statusHistory: StatusHistory[];
   trackingCode?: string;
