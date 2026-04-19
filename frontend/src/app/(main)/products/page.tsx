@@ -86,6 +86,12 @@ function ProductsContent() {
     gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    fetchProducts(filters, newPage);
+    gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Page header */}
@@ -251,7 +257,7 @@ function ProductsContent() {
               </div>
               {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8">
-                  <PaginationComp pagination={pagination} onPageChange={setPage} />
+                  <PaginationComp pagination={pagination} onPageChange={handlePageChange} />
                 </div>
               )}
             </>

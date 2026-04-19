@@ -170,24 +170,42 @@ export default function OrderDetailPage() {
           )}
         </div>
 
-        {/* Payment summary */}
+        {/* Payment summary — full breakdown */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-5">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Thanh toán</p>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
-              <span>Tạm tính</span>
-              <span>{formatPrice(order.totalAmount)}</span>
-            </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Vận chuyển</span>
-              <span className="text-emerald-600 font-semibold">Miễn phí</span>
-            </div>
-            <div className="flex justify-between font-extrabold text-gray-900 pt-2 border-t border-gray-100 text-base">
-              <span>Tổng cộng</span>
-              <span className="text-rose-600 text-lg">{formatPrice(order.totalAmount)}</span>
-            </div>
-          </div>
-          <p className="text-[11px] text-gray-400 mt-2">💰 COD — Thanh toán khi nhận hàng</p>
+          {(() => {
+            // Backwards-compat: legacy orders may not have subtotal/shippingFee/discount
+            const subtotal    = order.subtotal    ?? (order.totalAmount + (order.discount || 0) - (order.shippingFee || 0));
+            const shippingFee = order.shippingFee ?? 0;
+            const discount    = order.discount    ?? 0;
+            return (
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>Tạm tính ({order.items.length} sản phẩm)</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Phí vận chuyển</span>
+                  {shippingFee === 0
+                    ? <span className="text-emerald-600 font-semibold">Miễn phí</span>
+                    : <span>{formatPrice(shippingFee)}</span>}
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-emerald-600 font-semibold">
+                    <span className="truncate">{order.discountNote || (order.voucherCode ? `Mã ${order.voucherCode}` : 'Giảm giá')}</span>
+                    <span className="shrink-0 ml-2">-{formatPrice(discount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-extrabold text-gray-900 pt-2 border-t border-gray-200 text-base">
+                  <span>Tổng cộng</span>
+                  <span className="text-rose-600 text-lg">{formatPrice(order.totalAmount)}</span>
+                </div>
+              </div>
+            );
+          })()}
+          <p className="text-[11px] text-gray-400 mt-3 flex items-center gap-1">
+            <span>💰</span> COD — Thanh toán khi nhận hàng
+          </p>
         </div>
       </div>
 

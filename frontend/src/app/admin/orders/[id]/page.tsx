@@ -170,9 +170,37 @@ export default function AdminOrderDetailPage() {
               })}
             </div>
 
-            <div className="flex justify-between font-extrabold text-gray-900 pt-4 mt-4 border-t-2 border-gray-200 text-base">
-              <span>Tổng cộng</span>
-              <span className="text-rose-600 text-xl">{formatPrice(order.totalAmount)}</span>
+            {/* Payment breakdown */}
+            <div className="pt-4 mt-4 border-t-2 border-gray-200 space-y-1.5 text-sm">
+              {(() => {
+                const subtotal    = order.subtotal    ?? (order.totalAmount + (order.discount || 0) - (order.shippingFee || 0));
+                const shippingFee = order.shippingFee ?? 0;
+                const discount    = order.discount    ?? 0;
+                return (
+                  <>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Tạm tính</span>
+                      <span>{formatPrice(subtotal)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Phí vận chuyển</span>
+                      {shippingFee === 0
+                        ? <span className="text-emerald-600 font-semibold">Miễn phí</span>
+                        : <span>{formatPrice(shippingFee)}</span>}
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-semibold">
+                        <span className="truncate">{order.discountNote || (order.voucherCode ? `Mã ${order.voucherCode}` : 'Giảm giá')}</span>
+                        <span className="shrink-0 ml-2">-{formatPrice(discount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-extrabold text-gray-900 pt-2 border-t border-gray-100 text-base">
+                      <span>Tổng cộng</span>
+                      <span className="text-rose-600 text-xl">{formatPrice(order.totalAmount)}</span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
 

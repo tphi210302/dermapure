@@ -29,6 +29,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors]   = useState<Record<string, string>>({});
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const [form, setForm] = useState({
     recipientName: user?.name  || '',
@@ -109,13 +110,20 @@ export default function CheckoutPage() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Step 1: validate then open confirm dialog
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cart || cart.items.length === 0) { toast.error('Giỏ hàng trống'); return; }
     if (!validate()) {
       toast.error('Vui lòng điền đầy đủ thông tin giao hàng');
       return;
     }
+    setShowConfirm(true);
+  };
+
+  // Step 2: actually submit after user confirms
+  const confirmCheckout = async () => {
+    setShowConfirm(false);
     setLoading(true);
     try {
       await orderService.checkout({
@@ -386,6 +394,88 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-12 w-12 bg-rose-100 rounded-full flex items-center justify-center text-2xl shrink-0">
+                🛒
+              </div>
+              <div>
+                <h3 className="font-extrabold text-gray-900 text-lg">Xác nhận đặt hàng?</h3>
+                <p className="text-xs text-gray-500">Vui lòng kiểm tra lại thông tin đơn hàng</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm mb-4">
+              <div className="pb-2 border-b border-gray-200">
+                <p className="text-xs font-bold text-gray-500 mb-1">GIAO ĐẾN</p>
+                <p className="font-semibold text-gray-900">{form.recipientName} · {form.phone}</p>
+                <p className="text-xs text-gray-600">
+                  {form.street}, {form.ward}, {form.state}
+                </p>
+              </div>
+
+              <div className="flex justify-between text-gray-600">
+                <span>Tạm tính ({cartCount} sản phẩm)</span>
+                <span>{formatPrice(cartTotal)}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Phí vận chuyển</span>
+                {shippingFee === 0
+                  ? <span className="text-emerald-600 font-semibold">Miễn phí</span>
+                  : <span>{formatPrice(shippingFee)}</span>}
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-emerald-600 font-semibold">
+                  <span className="truncate">{voucher?.note || 'Giảm giá'}</span>
+                  <span className="shrink-0 ml-2">-{formatPrice(discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-extrabold text-gray-900 pt-2 border-t border-gray-200 text-base">
+                <span>Tổng thanh toán</span>
+                <span className="text-rose-600 text-lg">{formatPrice(finalTotal)}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center mb-4">
+              💵 Thanh toán khi nhận hàng (COD)
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowConfirm(false)}
+                disabled={loading}
+                className="flex-1 py-3 font-bold rounded-xl border-2 border-gray-200 text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-60"
+              >
+                Quay lại
+              </button>
+              <button
+                type="button"
+                onClick={confirmCheckout}
+                disabled={loading}
+                className="flex-1 py-3 font-extrabold text-white rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{ background: 'linear-gradient(135deg,#e11d48,#f43f5e,#fb7185)' }}
+              >
+                {loading ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Đang đặt…
+                  </>
+                ) : (
+                  <>✓ Xác nhận</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
