@@ -120,17 +120,10 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-800 mt-6 sm:mt-10 pt-4 sm:pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="border-t border-gray-800 mt-6 sm:mt-10 pt-4 sm:pt-6 text-center">
           <p className="text-[10px] sm:text-xs text-gray-500">
             © {new Date().getFullYear()} DermaPure. Tất cả quyền được bảo lưu.
           </p>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-center">
-            {['Visa', 'Mastercard', 'MoMo', 'ZaloPay', 'COD'].map((p) => (
-              <span key={p} className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gray-800 rounded-md text-[9px] sm:text-[10px] text-gray-400 font-medium border border-gray-700">
-                {p}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
     </footer>
