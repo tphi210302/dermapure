@@ -13,6 +13,19 @@ const createUser = async (data) => {
   const byPhone = await User.findOne({ phone: data.phone });
   if (byPhone) throw ApiError.badRequest('Số điện thoại đã được sử dụng');
 
+  // Custom affiliate code — uppercase + uniqueness check
+  if (data.affiliateCode) {
+    data.affiliateCode = data.affiliateCode.trim().toUpperCase();
+    if (!data.affiliateCode) {
+      delete data.affiliateCode;
+    } else {
+      const byCode = await User.findOne({ affiliateCode: data.affiliateCode });
+      if (byCode) throw ApiError.badRequest('Mã giới thiệu đã được sử dụng');
+    }
+  } else {
+    delete data.affiliateCode;
+  }
+
   const user = await User.create(data);
   return user.toSafeObject();
 };
@@ -45,6 +58,22 @@ const getUserById = async (id) => {
 const updateUser = async (id, data) => {
   const user = await User.findById(id);
   if (!user) throw ApiError.notFound('User not found');
+
+  // Handle affiliate code change — normalize, enforce uniqueness, allow clear via ''/null
+  if (data.affiliateCode !== undefined) {
+    if (!data.affiliateCode) {
+      user.affiliateCode = undefined;
+      delete data.affiliateCode;
+    } else {
+      const code = data.affiliateCode.trim().toUpperCase();
+      if (code !== user.affiliateCode) {
+        const byCode = await User.findOne({ _id: { $ne: user._id }, affiliateCode: code });
+        if (byCode) throw ApiError.badRequest('Mã giới thiệu đã được sử dụng');
+        data.affiliateCode = code;
+      }
+    }
+  }
+
   Object.assign(user, data);
   await user.save();
   return user.toSafeObject();

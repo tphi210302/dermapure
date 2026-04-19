@@ -13,6 +13,7 @@ export const adminService = {
     password: string;
     role?: 'customer' | 'staff' | 'admin';
     isActive?: boolean;
+    affiliateCode?: string;
   }) => api.post('/users', data),
 
   updateUser: (id: string, data: Record<string, unknown>) =>

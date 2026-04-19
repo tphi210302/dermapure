@@ -28,8 +28,13 @@ export default function AdminUsersPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [showCreatePw,  setShowCreatePw]  = useState(false);
   const [newUser, setNewUser] = useState({
-    name: '', email: '', phone: '', password: '', role: 'staff' as 'staff' | 'admin' | 'customer',
+    name: '', email: '', phone: '', password: '', role: 'staff' as 'staff' | 'admin' | 'customer', affiliateCode: '',
   });
+
+  // Inline affiliate code edit
+  const [codeEditId, setCodeEditId]       = useState<string | null>(null);
+  const [codeDraft,  setCodeDraft]        = useState('');
+  const [codeSaving, setCodeSaving]       = useState(false);
 
   const fetchUsers = (p = page, q = search) => {
     setLoading(true);
@@ -83,16 +88,39 @@ export default function AdminUsersPage() {
   };
 
   const resetCreateForm = () => {
-    setNewUser({ name: '', email: '', phone: '', password: '', role: 'staff' });
+    setNewUser({ name: '', email: '', phone: '', password: '', role: 'staff', affiliateCode: '' });
     setShowCreatePw(false);
   };
 
+  const openCodeEdit = (u: User) => {
+    setCodeEditId(u._id);
+    setCodeDraft(u.affiliateCode || '');
+  };
+  const cancelCodeEdit = () => { setCodeEditId(null); setCodeDraft(''); };
+  const saveAffiliateCode = async (userId: string) => {
+    const code = codeDraft.trim().toUpperCase();
+    if (code && !/^[A-Z0-9]{3,20}$/.test(code)) {
+      toast.error('Mã chỉ gồm chữ hoa và số, 3–20 ký tự'); return;
+    }
+    setCodeSaving(true);
+    try {
+      await adminService.updateUser(userId, { affiliateCode: code });
+      toast.success(code ? 'Đã cập nhật mã' : 'Đã xoá mã — lần sau hệ thống tự sinh');
+      cancelCodeEdit();
+      fetchUsers(page, search);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally { setCodeSaving(false); }
+  };
+
   const handleCreateUser = async () => {
-    const { name, phone, password, email, role } = newUser;
+    const { name, phone, password, email, role, affiliateCode } = newUser;
     if (!name.trim() || name.trim().length < 2) { toast.error('Họ tên tối thiểu 2 ký tự'); return; }
     if (!/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) { toast.error('SĐT không hợp lệ (vd: 0912345678)'); return; }
     if (password.length < 8) { toast.error('Mật khẩu tối thiểu 8 ký tự'); return; }
     if (email && !/^\S+@\S+\.\S+$/.test(email.trim())) { toast.error('Email không hợp lệ'); return; }
+    const code = affiliateCode.trim().toUpperCase();
+    if (code && !/^[A-Z0-9]{3,20}$/.test(code)) { toast.error('Mã giới thiệu chỉ gồm chữ hoa và số, 3–20 ký tự'); return; }
 
     setCreateLoading(true);
     try {
@@ -102,6 +130,7 @@ export default function AdminUsersPage() {
         password,
         role,
         ...(email.trim() && { email: email.trim() }),
+        ...(code && (role === 'staff' || role === 'admin') && { affiliateCode: code }),
       });
       toast.success(`Đã tạo tài khoản ${role === 'staff' ? 'nhân viên' : role} thành công`);
       setCreateOpen(false);
@@ -239,6 +268,21 @@ export default function AdminUsersPage() {
                   </button>
                 </div>
               </div>
+
+              {(newUser.role === 'staff' || newUser.role === 'admin') && (
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                    Mã giới thiệu (tùy chọn) <span className="text-[10px] font-normal text-gray-400">— để trống sẽ tự sinh</span>
+                  </label>
+                  <input
+                    className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm font-mono uppercase tracking-wider focus:bg-white focus:border-rose-400 focus:outline-none"
+                    placeholder="VD: HOA2024 (3–20 chữ hoa/số)"
+                    value={newUser.affiliateCode}
+                    onChange={(e) => setNewUser((p) => ({ ...p, affiliateCode: e.target.value.toUpperCase() }))}
+                    maxLength={20}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -356,8 +400,36 @@ export default function AdminUsersPage() {
                     <td className="py-3 pr-4">
                       <div className="flex flex-col gap-1">
                         <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : 'badge badge-gray'}>{u.role}</span>
-                        {u.affiliateCode && (u.role === 'staff' || u.role === 'admin') && (
-                          <span className="font-mono text-[10px] font-bold text-rose-600" title="Mã giới thiệu">🎯 {u.affiliateCode}</span>
+                        {(u.role === 'staff' || u.role === 'admin') && (
+                          codeEditId === u._id ? (
+                            <div className="flex items-center gap-1">
+                              <input
+                                className="w-28 px-1.5 py-0.5 text-[11px] font-mono uppercase border border-rose-300 rounded bg-white focus:outline-none focus:ring-2 focus:ring-rose-400/30"
+                                value={codeDraft}
+                                onChange={(e) => setCodeDraft(e.target.value.toUpperCase())}
+                                placeholder="CODE"
+                                maxLength={20}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveAffiliateCode(u._id);
+                                  if (e.key === 'Escape') cancelCodeEdit();
+                                }}
+                              />
+                              <button onClick={() => saveAffiliateCode(u._id)} disabled={codeSaving}
+                                className="px-1.5 py-0.5 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded disabled:opacity-60">
+                                {codeSaving ? '…' : '✓'}
+                              </button>
+                              <button onClick={cancelCodeEdit}
+                                className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-[10px] font-bold rounded">×</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => openCodeEdit(u)}
+                              className="group flex items-center gap-1 font-mono text-[10px] font-bold text-rose-600 hover:text-rose-700"
+                              title="Click để sửa mã giới thiệu">
+                              🎯 {u.affiliateCode || <span className="italic text-gray-400 font-sans">(đặt mã)</span>}
+                              <span className="opacity-0 group-hover:opacity-100 text-[9px]">✏️</span>
+                            </button>
+                          )
                         )}
                       </div>
                     </td>
