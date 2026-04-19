@@ -91,6 +91,7 @@ export default function AffiliatePage() {
               </button>
             </div>
             <p className="text-[11px] opacity-75 mt-2">Khách click link → cookie lưu 30 ngày → khi đặt đơn, đơn được gán cho bạn.</p>
+            <p className="text-[11px] opacity-75 mt-1">⚠️ Đặt đơn bằng chính tài khoản bạn sẽ <strong>không tính hoa hồng</strong>.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mt-6">
