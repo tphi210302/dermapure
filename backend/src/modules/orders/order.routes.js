@@ -40,7 +40,7 @@ router.use(protect);
  *     responses:
  *       201: { description: Order created }
  */
-router.post('/checkout', authorize('customer', 'admin'), validate(schema.checkout), ctrl.checkout);
+router.post('/checkout', validate(schema.checkout), ctrl.checkout);
 
 /**
  * @swagger
