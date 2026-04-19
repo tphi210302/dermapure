@@ -36,6 +36,47 @@ export default function AdminUsersPage() {
   const [codeDraft,  setCodeDraft]        = useState('');
   const [codeSaving, setCodeSaving]       = useState(false);
 
+  // Edit-user modal state
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '', email: '', phone: '', role: 'customer' as 'customer' | 'sales' | 'staff' | 'admin',
+  });
+  const [editLoading, setEditLoading] = useState(false);
+
+  const openEdit = (u: User) => {
+    setEditUser(u);
+    setEditForm({
+      name: u.name || '',
+      email: u.email || '',
+      phone: u.phone || '',
+      role: (u.role as any) || 'customer',
+    });
+  };
+  const cancelEdit = () => setEditUser(null);
+
+  const saveEdit = async () => {
+    if (!editUser) return;
+    const { name, email, phone, role } = editForm;
+    if (!name.trim() || name.trim().length < 2) { toast.error('Họ tên tối thiểu 2 ký tự'); return; }
+    if (phone && !/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/.test(phone.trim())) { toast.error('SĐT không hợp lệ'); return; }
+    if (email && !/^\S+@\S+\.\S+$/.test(email.trim())) { toast.error('Email không hợp lệ'); return; }
+
+    setEditLoading(true);
+    try {
+      const payload: Record<string, unknown> = { name: name.trim(), role };
+      if (phone.trim() !== (editUser.phone || '')) payload.phone = phone.trim();
+      if (email.trim() !== (editUser.email || '')) payload.email = email.trim();
+      await adminService.updateUser(editUser._id, payload);
+      toast.success('Đã cập nhật người dùng');
+      cancelEdit();
+      fetchUsers(page, search);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const fetchUsers = (p = page, q = search) => {
     setLoading(true);
     adminService.getUsers({ page: p, limit: 15, search: q })
@@ -178,7 +219,7 @@ export default function AdminUsersPage() {
             Tạo tài khoản
           </button>
           <form onSubmit={handleSearch} className="flex gap-2">
-            <Input placeholder="Tìm tên hoặc email…" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input placeholder="Tìm tên, email hoặc SĐT…" value={search} onChange={(e) => setSearch(e.target.value)} />
             <Button type="submit" variant="secondary">Tìm kiếm</Button>
           </form>
         </div>
@@ -315,6 +356,101 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {/* Edit user modal */}
+      {editUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center text-xl">✏️</div>
+              <div>
+                <h3 className="font-extrabold text-gray-900 text-lg">Sửa người dùng</h3>
+                <p className="text-xs text-gray-500 font-mono">{editUser._id.slice(-8).toUpperCase()}</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Vai trò</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(['sales', 'staff', 'admin', 'customer'] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setEditForm((p) => ({ ...p, role: r }))}
+                      className={`py-2 px-2 text-[11px] font-bold rounded-xl border-2 transition-all ${
+                        editForm.role === r
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'
+                      }`}
+                    >
+                      {r === 'sales' ? '📣 Sales'
+                        : r === 'staff' ? '👔 Nhân viên'
+                        : r === 'admin' ? '🛡️ Admin'
+                        : '🛒 Khách'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Họ và tên *</label>
+                <input
+                  className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-primary-400 focus:outline-none"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Số điện thoại *</label>
+                <input
+                  type="tel"
+                  className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-primary-400 focus:outline-none"
+                  placeholder="0912345678"
+                  value={editForm.phone}
+                  onChange={(e) => setEditForm((p) => ({ ...p, phone: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  className="w-full px-3 py-2.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:bg-white focus:border-primary-400 focus:outline-none"
+                  placeholder="(để trống nếu không có)"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))}
+                />
+              </div>
+
+              <p className="text-[11px] text-gray-400">
+                💡 Đổi mật khẩu: nhấn vào ô <strong>••••••••</strong> ở bảng chính. Mã giới thiệu: click vào mã dưới vai trò.
+              </p>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                disabled={editLoading}
+                className="flex-1 py-2.5 font-bold rounded-xl border-2 border-gray-200 text-gray-700 hover:bg-gray-50 text-sm disabled:opacity-60"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={editLoading}
+                className="flex-1 py-2.5 font-extrabold text-white rounded-xl shadow-lg text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(135deg,#4f46e5,#6366f1)' }}
+              >
+                {editLoading ? 'Đang lưu…' : '✓ Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-20"><Spinner size="lg" /></div>
       ) : (
@@ -326,6 +462,7 @@ export default function AdminUsersPage() {
                 <tr className="text-left text-gray-500 border-b">
                   <th className="pb-3 pr-4">Tên</th>
                   <th className="pb-3 pr-4">Email</th>
+                  <th className="pb-3 pr-4">SĐT</th>
                   <th className="pb-3 pr-4">Mật khẩu</th>
                   <th className="pb-3 pr-4">Vai trò</th>
                   <th className="pb-3 pr-4">Trạng thái</th>
@@ -337,7 +474,8 @@ export default function AdminUsersPage() {
                 {users.map((u) => (
                   <tr key={u._id} className="hover:bg-gray-50 align-top">
                     <td className="py-3 pr-4 font-medium text-gray-900">{u.name}</td>
-                    <td className="py-3 pr-4 text-gray-600">{u.email}</td>
+                    <td className="py-3 pr-4 text-gray-600">{u.email || <span className="text-gray-300 italic">—</span>}</td>
+                    <td className="py-3 pr-4 text-gray-600 font-mono text-xs">{u.phone || <span className="text-gray-300 italic">—</span>}</td>
 
                     {/* Password column */}
                     <td className="py-3 pr-4">
@@ -447,6 +585,12 @@ export default function AdminUsersPage() {
                     <td className="py-3">
                       <div className="flex items-center gap-3">
                         <button
+                          onClick={() => openEdit(u)}
+                          className="text-xs font-medium text-primary-600 hover:underline"
+                        >
+                          ✏️ Sửa
+                        </button>
+                        <button
                           onClick={() => toggleActive(u)}
                           className={`text-xs font-medium hover:underline ${u.isActive ? 'text-amber-600' : 'text-green-600'}`}
                         >
@@ -478,7 +622,8 @@ export default function AdminUsersPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900 truncate">{u.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{u.email || u.phone || '—'}</p>
+                    {u.email && <p className="text-xs text-gray-500 truncate">📧 {u.email}</p>}
+                    {u.phone && <p className="text-xs text-gray-500 font-mono">📞 {u.phone}</p>}
                     <div className="flex gap-1.5 mt-1.5 flex-wrap">
                       <span className={u.role === 'admin' ? 'badge badge-blue' : u.role === 'staff' ? 'badge badge-green' : u.role === 'sales' ? 'badge badge-yellow' : 'badge badge-gray'}>{u.role}</span>
                       <span className={u.isActive ? 'badge-green' : 'badge-red'}>{u.isActive ? 'Hoạt động' : 'Tắt'}</span>
@@ -524,13 +669,17 @@ export default function AdminUsersPage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-100">
+                  <button onClick={() => openEdit(u)}
+                    className="py-2 bg-primary-50 text-primary-700 hover:bg-primary-100 text-xs font-bold rounded-lg">
+                    ✏️ Sửa
+                  </button>
                   <button onClick={() => toggleActive(u)}
-                    className={`flex-1 py-2 text-xs font-bold rounded-lg ${u.isActive ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>
+                    className={`py-2 text-xs font-bold rounded-lg ${u.isActive ? 'bg-amber-50 text-amber-700 hover:bg-amber-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>
                     {u.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
                   </button>
                   <button onClick={() => handleDelete(u)}
-                    className="flex-1 py-2 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold rounded-lg">
+                    className="py-2 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-bold rounded-lg">
                     Xóa
                   </button>
                 </div>

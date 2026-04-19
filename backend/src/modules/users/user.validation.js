@@ -21,9 +21,10 @@ const affiliateCodeRule = Joi.string()
 
 const adminUpdateUser = Joi.object({
   name:     Joi.string().min(2).max(80).optional(),
+  email:    Joi.string().email().allow('', null).optional(),
   role:     Joi.string().valid('customer', 'sales', 'staff', 'admin').optional(),
   isActive: Joi.boolean().optional(),
-  phone:    Joi.string().pattern(/^[0-9+\-\s()]{7,20}$/).optional(),
+  phone:    Joi.string().pattern(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/).optional(),
   password: Joi.string().min(8).optional(),
   affiliateCode: affiliateCodeRule.allow('', null).optional(),
 });

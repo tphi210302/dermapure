@@ -36,6 +36,7 @@ const getAllUsers = async ({ page = 1, limit = 20, search = '', role = '' }) => 
     query.$or = [
       { name:  { $regex: search, $options: 'i' } },
       { email: { $regex: search, $options: 'i' } },
+      { phone: { $regex: search, $options: 'i' } },
     ];
   }
   if (role) query.role = role;
@@ -58,6 +59,29 @@ const getUserById = async (id) => {
 const updateUser = async (id, data) => {
   const user = await User.findById(id);
   if (!user) throw ApiError.notFound('User not found');
+
+  // Email uniqueness (if changed)
+  if (data.email !== undefined) {
+    const email = (data.email || '').trim().toLowerCase();
+    if (email && email !== user.email) {
+      const byEmail = await User.findOne({ _id: { $ne: user._id }, email });
+      if (byEmail) throw ApiError.badRequest('Email đã được sử dụng');
+      data.email = email;
+    } else if (!email) {
+      user.email = undefined;
+      delete data.email;
+    }
+  }
+
+  // Phone uniqueness (if changed)
+  if (data.phone !== undefined) {
+    const phone = (data.phone || '').trim();
+    if (phone && phone !== user.phone) {
+      const byPhone = await User.findOne({ _id: { $ne: user._id }, phone });
+      if (byPhone) throw ApiError.badRequest('Số điện thoại đã được sử dụng');
+      data.phone = phone;
+    }
+  }
 
   // Handle affiliate code change — normalize, enforce uniqueness, allow clear via ''/null
   if (data.affiliateCode !== undefined) {
