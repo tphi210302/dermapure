@@ -423,8 +423,8 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 10. FINAL CTA */}
-        {setting && (
+        {/* 10. FINAL CTA — hidden when already signed in */}
+        {setting && !isAuthenticated && (
           <section className="relative overflow-hidden rounded-3xl text-white text-center py-12 sm:py-14 px-6 sm:px-8"
             style={{ background: 'linear-gradient(135deg, #4c0519 0%, #9f1239 50%, #e11d48 100%)' }}>
             <div className="absolute inset-0 pointer-events-none opacity-10"

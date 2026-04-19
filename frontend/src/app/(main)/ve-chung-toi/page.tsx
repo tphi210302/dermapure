@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import AboutCtaButtons from './AboutCtaButtons';
 
 export const metadata: Metadata = { title: 'Về chúng tôi' };
 
@@ -148,14 +149,7 @@ export default function AboutPage() {
         <section className="bg-gradient-to-br from-primary-600 to-blue-700 rounded-3xl p-8 text-white text-center">
           <h2 className="text-xl font-extrabold mb-2">Sẵn sàng chăm sóc sức khoẻ cùng chúng tôi?</h2>
           <p className="text-white/75 text-sm mb-6">Tham gia cùng 50.000+ khách hàng đang tin tưởng DermaPure.</p>
-          <div className="flex gap-3 justify-center">
-            <Link href="/products" className="bg-white text-primary-700 font-bold text-sm px-6 py-2.5 rounded-xl hover:bg-blue-50 transition-colors shadow-md">
-              Mua sắm ngay
-            </Link>
-            <Link href="/register" className="border-2 border-white/30 text-white font-semibold text-sm px-6 py-2.5 rounded-xl hover:bg-white/10 transition-colors">
-              Tạo tài khoản
-            </Link>
-          </div>
+          <AboutCtaButtons />
         </section>
       </div>
     </div>
