@@ -70,8 +70,10 @@ app.use(compression());
 // ── Request logger ─────────────────────────────────────────
 app.use(requestLogger);
 
-// ── Swagger docs ───────────────────────────────────────────
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+// ── Swagger docs (dev only — hide API surface in production) ──
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { explorer: true }));
+}
 
 // ── Health check ───────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

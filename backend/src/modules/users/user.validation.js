@@ -20,7 +20,7 @@ const adminUpdateUser = Joi.object({
   role:     Joi.string().valid('customer', 'staff', 'admin').optional(),
   isActive: Joi.boolean().optional(),
   phone:    Joi.string().pattern(/^[0-9+\-\s()]{7,20}$/).optional(),
-  password: Joi.string().min(6).optional(),
+  password: Joi.string().min(8).optional(),
 });
 
 const adminCreateUser = Joi.object({
