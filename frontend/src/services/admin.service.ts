@@ -11,7 +11,7 @@ export const adminService = {
     email?: string;
     phone: string;
     password: string;
-    role?: 'customer' | 'staff' | 'admin';
+    role?: 'customer' | 'sales' | 'staff' | 'admin';
     isActive?: boolean;
     affiliateCode?: string;
   }) => api.post('/users', data),
