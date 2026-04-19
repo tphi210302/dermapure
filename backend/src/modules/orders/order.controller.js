@@ -5,8 +5,13 @@ const asyncHandler = require('../../utils/asyncHandler');
 const ApiResponse = require('../../utils/ApiResponse');
 
 const checkout = asyncHandler(async (req, res) => {
-  const order = await orderService.checkout(req.user.id, req.body);
-  return ApiResponse.created(res, order, 'Order placed successfully');
+  try {
+    const order = await orderService.checkout(req.user.id, req.body);
+    return ApiResponse.created(res, order, 'Order placed successfully');
+  } catch (err) {
+    console.error('[checkout] user=%s role=%s err=%s', req.user?.id, req.user?.role, err?.message);
+    throw err;
+  }
 });
 
 const getMyOrders = asyncHandler(async (req, res) => {
