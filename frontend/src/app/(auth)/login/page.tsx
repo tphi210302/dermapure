@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -15,11 +15,17 @@ const inputCls = `w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [form, setForm]       = useState({ identifier: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
   const [errors, setErrors]   = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace(searchParams.get('redirect') || '/');
+    }
+  }, [isLoading, isAuthenticated, router, searchParams]);
 
   const set = (k: string, v: string) => {
     setForm((p) => ({ ...p, [k]: v }));

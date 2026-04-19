@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -14,11 +14,15 @@ const inputCls = `w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl 
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, isAuthenticated, isLoading } = useAuth();
   const [form, setForm]       = useState({ name: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
   const [errors, setErrors]   = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) router.replace('/');
+  }, [isLoading, isAuthenticated, router]);
 
   const set = (k: string, v: string) => {
     setForm((p) => ({ ...p, [k]: v }));
