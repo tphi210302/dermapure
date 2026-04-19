@@ -61,12 +61,32 @@ const updateProfile = async (userId, data) => {
   return user.toSafeObject();
 };
 
+// Generate a fresh affiliate code — base on name, 4-char suffix, guaranteed unique
+const buildAffiliateCode = async (name) => {
+  const base = (name || 'STAFF').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase() || 'STAFF';
+  for (let i = 0; i < 5; i++) {
+    const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const code = `${base}${suffix}`;
+    const exists = await User.exists({ affiliateCode: code });
+    if (!exists) return code;
+  }
+  // Fallback with timestamp
+  return `${base}${Date.now().toString(36).toUpperCase().slice(-4)}`;
+};
+
 // Affiliate stats for the logged-in staff/admin
 const getMyAffiliateStats = async (userId) => {
   const user = await User.findById(userId).select('name email role affiliateCode');
   if (!user) throw ApiError.notFound('User not found');
   if (user.role !== 'staff' && user.role !== 'admin') {
     throw ApiError.forbidden('Affiliate is only available for staff/admin');
+  }
+
+  // Backfill code for legacy staff/admin accounts created before affiliate feature
+  if (!user.affiliateCode) {
+    user.affiliateCode = await buildAffiliateCode(user.name);
+    await user.save();
   }
 
   // Aggregate orders referred by this user — excluded cancelled
