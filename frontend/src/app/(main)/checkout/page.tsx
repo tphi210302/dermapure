@@ -49,11 +49,12 @@ export default function CheckoutPage() {
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [isAutoApplied,  setIsAutoApplied]  = useState(false);
 
-  // Affiliate — detect and warn on self-referral
+  // Affiliate — detect and warn
   const [affiliateRef, setAffiliateRef] = useState<string | null>(null);
   useEffect(() => {
     setAffiliateRef(readAffiliateRef());
   }, []);
+  const isInternalBuyer = user?.role === 'staff' || user?.role === 'sales' || user?.role === 'admin';
   const isSelfReferral = !!(
     affiliateRef &&
     user?.affiliateCode &&
@@ -138,10 +139,11 @@ export default function CheckoutPage() {
     setShowConfirm(false);
     setLoading(true);
     try {
-      // Strip affiliate code if it's the user's own (silent self-referral defense;
-      // backend also ignores it, but this is clearer to the user).
+      // Strip affiliate code if buyer is internal (staff/sales/admin): they NEVER earn
+      // commission — neither from their own code nor from a colleague's. Backend also
+      // enforces this, but this is clearer to the user.
       let affiliateCode: string | undefined = readAffiliateRef() || undefined;
-      if (affiliateCode && user?.affiliateCode && affiliateCode.toUpperCase() === user.affiliateCode.toUpperCase()) {
+      if (affiliateCode && isInternalBuyer) {
         affiliateCode = undefined;
       }
       await orderService.checkout({
@@ -337,9 +339,9 @@ export default function CheckoutPage() {
             {/* Affiliate notice */}
             {affiliateRef && (
               <div className={`border-t border-gray-100 mt-4 pt-4`}>
-                {isSelfReferral ? (
+                {isInternalBuyer ? (
                   <div className="rounded-xl px-3 py-2.5 border-2 bg-amber-50 border-amber-200 text-[11px] text-amber-800">
-                    ⚠️ Mã <span className="font-mono font-bold">{affiliateRef}</span> là mã của bạn — đơn này <strong>không tính hoa hồng</strong> cho bạn.
+                    ⚠️ Tài khoản nội bộ (nhân viên/sales/admin) đặt đơn <strong>không tính hoa hồng</strong> — mã <span className="font-mono font-bold">{affiliateRef}</span> sẽ bị bỏ qua.
                   </div>
                 ) : (
                   <div className="rounded-xl px-3 py-2.5 border-2 bg-rose-50 border-rose-200 text-[11px] text-rose-800">

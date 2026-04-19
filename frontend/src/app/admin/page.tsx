@@ -94,24 +94,23 @@ export default function AdminDashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const [stats, setStats]     = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const isAdmin = user?.role === 'admin';
 
-  // Only admin can view dashboard — redirect staff/sales to their default page
+  // Redirect non-admin away; fetch only when confirmed admin
   useEffect(() => {
     if (authLoading) return;
-    if (user && user.role !== 'admin') {
+    if (!user) return;
+    if (!isAdmin) {
       router.replace('/admin/orders');
+      return;
     }
-  }, [authLoading, user, router]);
-
-  useEffect(() => {
-    if (user?.role !== 'admin') return;
     adminService.getDashboard()
       .then(({ data }) => setStats(data.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [user?.role]);
+  }, [authLoading, user, isAdmin, router]);
 
-  if (authLoading || (user && user.role !== 'admin') || loading) {
+  if (authLoading || !isAdmin || loading) {
     return (
       <div className="space-y-8">
         <div className="skeleton h-8 w-40 rounded" />

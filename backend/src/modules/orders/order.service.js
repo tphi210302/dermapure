@@ -70,19 +70,26 @@ const checkout = async (userId, { shippingAddress, note, voucherCode, affiliateC
     await decrementStock(item.product._id, item.quantity, null);
   }
 
-  // 5b. Resolve affiliate code → staff user (ignore if not found, don't fail order)
+  // 5b. Resolve affiliate code → staff user
+  //     - Buyer must be a plain customer: staff/sales/admin ordering NEVER earns anyone commission
+  //       (prevents self-referral AND cross-referral between colleagues)
+  //     - If code not found or buyer is internal, silently drop it (order still succeeds)
   let affiliateStaff = null;
   let resolvedAffiliateCode = null;
   if (affiliateCode) {
-    const code = affiliateCode.trim().toUpperCase();
-    const staff = await User.findOne({
-      affiliateCode: code,
-      role: { $in: ['sales', 'staff', 'admin'] },
-      isActive: true,
-    }).select('_id affiliateCode');
-    if (staff && staff._id.toString() !== userId.toString()) {
-      affiliateStaff = staff._id;
-      resolvedAffiliateCode = staff.affiliateCode;
+    const buyer = await User.findById(userId).select('role');
+    const buyerIsInternal = buyer && (buyer.role === 'staff' || buyer.role === 'sales' || buyer.role === 'admin');
+    if (!buyerIsInternal) {
+      const code = affiliateCode.trim().toUpperCase();
+      const staff = await User.findOne({
+        affiliateCode: code,
+        role: { $in: ['sales', 'staff', 'admin'] },
+        isActive: true,
+      }).select('_id affiliateCode');
+      if (staff) {
+        affiliateStaff = staff._id;
+        resolvedAffiliateCode = staff.affiliateCode;
+      }
     }
   }
 
