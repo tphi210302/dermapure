@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { adminService } from '@/services/admin.service';
+import { useAuth } from '@/context/AuthContext';
 import { DashboardStats, Order } from '@/types';
 import { formatPrice, formatDate, ORDER_STATUS_BADGE, ORDER_STATUS_LABELS, cn } from '@/lib/utils';
 
@@ -88,16 +90,28 @@ const MonthlyChart = ({ data }: { data: DashboardStats['revenueByMonth'] }) => {
 };
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [stats, setStats]     = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Only admin can view dashboard — redirect staff/sales to their default page
   useEffect(() => {
+    if (authLoading) return;
+    if (user && user.role !== 'admin') {
+      router.replace('/admin/orders');
+    }
+  }, [authLoading, user, router]);
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return;
     adminService.getDashboard()
       .then(({ data }) => setStats(data.data))
+      .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?.role]);
 
-  if (loading) {
+  if (authLoading || (user && user.role !== 'admin') || loading) {
     return (
       <div className="space-y-8">
         <div className="skeleton h-8 w-40 rounded" />

@@ -66,7 +66,7 @@ type NavItem = {
 };
 
 const nav: NavItem[] = [
-  { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon                                                        },
+  { href: '/admin',            label: 'Tổng quan',        Icon: DashIcon,      roles: ['admin']                                 },
   { href: '/admin/content',    label: 'Nội dung trang',   Icon: ContentIcon,   roles: ['admin']                                 },
   { href: '/admin/bundles',    label: 'Combo liệu trình', Icon: BundleIcon,    roles: ['admin', 'staff']                        },
   { href: '/admin/products',   label: 'Sản phẩm',         Icon: ProdIcon,      roles: ['admin', 'staff']                        },
