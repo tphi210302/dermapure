@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { getErrorMessage } from '@/lib/utils';
+import { readAffiliateRef, writeAffiliateRef } from '@/components/affiliate/AffiliateCapture';
 import toast from 'react-hot-toast';
 
 const inputCls = `w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900
@@ -15,7 +16,7 @@ const inputCls = `w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl 
 export default function RegisterPage() {
   const router = useRouter();
   const { register, isAuthenticated, isLoading } = useAuth();
-  const [form, setForm]       = useState({ name: '', email: '', password: '', phone: '' });
+  const [form, setForm]       = useState({ name: '', email: '', password: '', phone: '', affiliateCode: '' });
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
   const [errors, setErrors]   = useState<Record<string, string>>({});
@@ -23,6 +24,12 @@ export default function RegisterPage() {
   useEffect(() => {
     if (!isLoading && isAuthenticated) router.replace('/');
   }, [isLoading, isAuthenticated, router]);
+
+  // Prefill if arrived via ?ref=CODE link
+  useEffect(() => {
+    const existing = readAffiliateRef();
+    if (existing) setForm((p) => ({ ...p, affiliateCode: existing }));
+  }, []);
 
   const set = (k: string, v: string) => {
     setForm((p) => ({ ...p, [k]: v }));
@@ -37,6 +44,8 @@ export default function RegisterPage() {
     if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Email không hợp lệ';
     if (!form.password) e.password = 'Mật khẩu là bắt buộc';
     else if (form.password.length < 8) e.password = 'Mật khẩu tối thiểu 8 ký tự';
+    const code = form.affiliateCode.trim().toUpperCase();
+    if (code && !/^[A-Z0-9]{3,20}$/.test(code)) e.affiliateCode = 'Mã chỉ gồm chữ hoa/số, 3–20 ký tự';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -52,6 +61,9 @@ export default function RegisterPage() {
         password: form.password,
         ...(form.email.trim() && { email: form.email.trim() }),
       });
+      // Save affiliate code (if user entered) so next checkout auto-attaches it
+      const code = form.affiliateCode.trim().toUpperCase();
+      if (code) writeAffiliateRef(code);
       toast.success('Tạo tài khoản thành công! Chào mừng 🎉');
       router.push('/');
     } catch (err) {
@@ -182,6 +194,23 @@ export default function RegisterPage() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Affiliate code (optional) */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              🎯 Mã giới thiệu <span className="font-normal text-gray-400">(nếu có)</span>
+            </label>
+            <input
+              type="text"
+              className={`${inputCls} font-mono uppercase tracking-wider`}
+              placeholder="VD: HOA2024 — để trống nếu không có"
+              value={form.affiliateCode}
+              onChange={(e) => set('affiliateCode', e.target.value.toUpperCase())}
+              maxLength={20}
+            />
+            {errors.affiliateCode && <p className="text-red-500 text-xs mt-1">{errors.affiliateCode}</p>}
+            <p className="text-[10px] text-gray-400 mt-1">Nhập mã của nhân viên đã giới thiệu — đơn đầu tiên bạn đặt sẽ tính cho họ.</p>
           </div>
 
 

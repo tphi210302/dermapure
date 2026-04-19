@@ -42,3 +42,12 @@ export const clearAffiliateRef = () => {
   if (typeof window === 'undefined') return;
   try { localStorage.removeItem(KEY); } catch {}
 };
+
+export const writeAffiliateRef = (code: string) => {
+  if (typeof window === 'undefined') return;
+  const norm = code.trim().toUpperCase().slice(0, 30);
+  if (!norm) { clearAffiliateRef(); return; }
+  try {
+    localStorage.setItem(KEY, JSON.stringify({ code: norm, at: Date.now() }));
+  } catch {}
+};
