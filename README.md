@@ -50,23 +50,6 @@ docker exec pharma-backend npm run seed:bundles
 docker exec pharma-backend npm run seed:accessories
 ```
 
-### 4. Truy cập
-
-- **Shop:** http://localhost:3000
-- **Admin:** http://localhost:3000/admin (login với `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`)
-- **API docs:** http://localhost:5000/api/docs
-
-## 🔐 Security Notes
-
-- `.env` file chứa secrets — **không bao giờ commit**
-- JWT secrets phải ≥ 32 ký tự random (dùng `openssl rand -base64 48`)
-- Đổi `SEED_ADMIN_PASSWORD` ngay sau khi deploy production
-- CORS allowlist qua `CLIENT_ORIGIN` (comma-separated domains)
-- Rate limit: global 100/15min + auth endpoint 15/15min (skip successful)
-- Account lockout: 1→5→15→30→60 phút tăng dần sau 5 lần sai
-- Password bcrypt cost 12, min 8 ký tự
-- MongoDB indexes: phone + email đều `unique + sparse` (cho phép null)
-
 ## 🎯 Tính năng chính
 
 ### Customer
