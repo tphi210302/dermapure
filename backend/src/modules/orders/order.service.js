@@ -2,6 +2,7 @@
 
 const Order = require('./order.model');
 const Cart = require('../cart/cart.model');
+const User = require('../users/user.model');
 const voucherService = require('../vouchers/voucher.service');
 const { decrementStock } = require('../products/product.service');
 const ApiError = require('../../utils/ApiError');
@@ -85,6 +86,17 @@ const checkout = async (userId, { shippingAddress, note, voucherCode }) => {
   if (appliedVoucher) await voucherService.markUsed(appliedVoucher._id);
   cart.items = [];
   await cart.save();
+
+  // 8. Remember shipping address on user profile for next time
+  await User.findByIdAndUpdate(userId, {
+    $set: {
+      'address.street':  shippingAddress.street,
+      'address.ward':    shippingAddress.ward,
+      'address.city':    shippingAddress.city,
+      'address.state':   shippingAddress.state,
+      'address.country': shippingAddress.country || 'Vietnam',
+    },
+  });
 
   return order.populate(populateOrder);
 };

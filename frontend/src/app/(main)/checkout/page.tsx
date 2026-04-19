@@ -26,7 +26,7 @@ const PHONE_RE = /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/;
 export default function CheckoutPage() {
   const router = useRouter();
   const { cart, cartTotal, cartCount, refreshCart } = useCart();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors]   = useState<Record<string, string>>({});
   const [showConfirm, setShowConfirm] = useState(false);
@@ -139,7 +139,7 @@ export default function CheckoutPage() {
         note: form.note.trim() || undefined,
         voucherCode: voucher?.code,
       });
-      await refreshCart();
+      await Promise.all([refreshCart(), refreshUser()]);
       toast.success('Đặt hàng thành công! 🎉');
       router.push('/orders');
     } catch (err) {
