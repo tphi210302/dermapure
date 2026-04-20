@@ -136,7 +136,7 @@ const LOCK_DURATIONS = [1, 5, 15, 30, 60];
 
 /**
  * Increment failed login attempts.
- * Returns { message } if account just got locked, null otherwise.
+ * Returns { locked, message, remaining } — `remaining` is attempts left before lockout.
  */
 userSchema.methods.incrementLoginAttempts = async function () {
   const maxAttempts = (this.role === 'admin' || this.role === 'staff' || this.role === 'sales') ? 3 : 5;
@@ -144,7 +144,7 @@ userSchema.methods.incrementLoginAttempts = async function () {
   // Previous lock expired → reset attempts (keep lockCount for progressive duration)
   if (this.lockUntil && this.lockUntil < Date.now()) {
     await this.updateOne({ $set: { loginAttempts: 1, lockUntil: null } });
-    return null;
+    return { locked: false, remaining: maxAttempts - 1 };
   }
 
   const newAttempts = (this.loginAttempts || 0) + 1;
@@ -159,11 +159,14 @@ userSchema.methods.incrementLoginAttempts = async function () {
       },
       $inc: { lockCount: 1 },
     });
-    return { message: `Quá nhiều lần đăng nhập sai. Tài khoản bị khóa ${lockMins} phút.` };
+    return {
+      locked: true,
+      message: `Quá nhiều lần đăng nhập sai. Tài khoản bị khóa ${lockMins} phút.`,
+    };
   }
 
   await this.updateOne({ $set: { loginAttempts: newAttempts } });
-  return null;
+  return { locked: false, remaining: maxAttempts - newAttempts };
 };
 
 const User = mongoose.model('User', userSchema);

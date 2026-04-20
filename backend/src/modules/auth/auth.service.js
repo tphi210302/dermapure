@@ -84,9 +84,12 @@ const login = async ({ identifier, email, phone, password }) => {
   const isMatch = await user.comparePassword(password);
 
   if (!isMatch) {
-    const locked = await user.incrementLoginAttempts();
-    if (locked) throw ApiError.tooManyRequests(locked.message);
-    throw ApiError.unauthorized('Email/SĐT hoặc mật khẩu không đúng');
+    const result = await user.incrementLoginAttempts();
+    if (result.locked) throw ApiError.tooManyRequests(result.message);
+    const suffix = result.remaining > 0
+      ? ` Còn ${result.remaining} lần thử trước khi tài khoản bị tạm khoá.`
+      : '';
+    throw ApiError.unauthorized(`Mật khẩu chưa đúng.${suffix}`);
   }
 
   // Success — reset lockout counters and issue tokens in one update
