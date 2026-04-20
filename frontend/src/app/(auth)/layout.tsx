@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import FloatContact from '@/components/ui/FloatContact';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -50,6 +51,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </footer>
+
+      {/* Customer-care floating contact icons (Zalo / FB / Phone) */}
+      <FloatContact />
     </div>
   );
 }
