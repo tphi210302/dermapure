@@ -117,4 +117,8 @@ router.get('/me', protect, ctrl.getMe);
 
 router.post('/change-password', protect, validate(schema.changePassword), ctrl.changePassword);
 
+// ── Forgot / Reset password (public) ─────────────────────
+router.post('/forgot-password', validate(schema.forgotPassword), ctrl.forgotPassword);
+router.post('/reset-password',  validate(schema.resetPassword),  ctrl.resetPassword);
+
 module.exports = router;

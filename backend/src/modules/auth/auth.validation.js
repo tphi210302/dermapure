@@ -36,4 +36,20 @@ const changePassword = Joi.object({
   }),
 });
 
-module.exports = { register, login, refreshToken, changePassword };
+const forgotPassword = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.email': 'Email không hợp lệ',
+    'any.required': 'Vui lòng nhập email',
+  }),
+});
+
+const resetPassword = Joi.object({
+  token: Joi.string().hex().length(64).required().messages({
+    'any.required': 'Thiếu token đặt lại mật khẩu',
+  }),
+  password: Joi.string().min(8).max(128).required().messages({
+    'string.min': 'Mật khẩu phải có ít nhất 8 ký tự',
+  }),
+});
+
+module.exports = { register, login, refreshToken, changePassword, forgotPassword, resetPassword };

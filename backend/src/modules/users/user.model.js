@@ -67,6 +67,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
     loginAttempts: {
       type: Number,
       default: 0,
@@ -118,6 +126,8 @@ userSchema.methods.toSafeObject = function () {
   delete obj.loginAttempts;
   delete obj.lockUntil;
   delete obj.lockCount;
+  delete obj.passwordResetToken;
+  delete obj.passwordResetExpires;
   return obj;
 };
 

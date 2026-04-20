@@ -1,8 +1,12 @@
 'use strict';
 
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../users/user.model');
 const ApiError = require('../../utils/ApiError');
+const emailService = require('../../services/email.service');
+
+const RESET_TOKEN_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 // ── Token helpers ──────────────────────────────────────────
 const signAccessToken = (userId, role) =>
@@ -132,4 +136,51 @@ const changePassword = async (userId, { currentPassword, newPassword }) => {
   await user.save();
 };
 
-module.exports = { register, login, refreshAccessToken, logout, getMe, changePassword };
+// ── Forgot password — send reset link by email ────────────
+// Always returns success (no account enumeration).
+const requestPasswordReset = async ({ email }) => {
+  const cleaned = (email || '').trim().toLowerCase();
+  if (!cleaned) return;
+
+  const user = await User.findOne({ email: cleaned });
+  if (!user) return; // silent: don't reveal if the email exists
+
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  user.passwordResetToken   = hashedToken;
+  user.passwordResetExpires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+  await user.save({ validateBeforeSave: false });
+
+  const base = process.env.CLIENT_ORIGIN?.split(',')[0]?.trim() || 'https://dermapure.vercel.app';
+  const resetUrl = `${base.replace(/\/$/, '')}/reset-password?token=${rawToken}`;
+
+  await emailService.sendPasswordReset({ to: user.email, name: user.name, resetUrl });
+};
+
+// ── Reset password — consume token, set new password ──────
+const resetPassword = async ({ token, password }) => {
+  if (!token || typeof token !== 'string') throw ApiError.badRequest('Token không hợp lệ');
+  const hashed = crypto.createHash('sha256').update(token).digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashed,
+    passwordResetExpires: { $gt: Date.now() },
+  }).select('+password +passwordResetToken +passwordResetExpires');
+
+  if (!user) throw ApiError.badRequest('Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.');
+
+  user.password = password;              // hashed via pre-save hook
+  user.passwordResetToken   = undefined;
+  user.passwordResetExpires = undefined;
+  user.refreshToken         = null;      // invalidate any existing sessions
+  // Reset lockout state so user can log in immediately
+  user.loginAttempts = 0;
+  user.lockUntil     = null;
+  await user.save();
+};
+
+module.exports = {
+  register, login, refreshAccessToken, logout, getMe, changePassword,
+  requestPasswordReset, resetPassword,
+};

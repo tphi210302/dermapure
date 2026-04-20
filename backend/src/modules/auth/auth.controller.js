@@ -35,4 +35,19 @@ const changePassword = asyncHandler(async (req, res) => {
   return ApiResponse.ok(res, null, 'Đổi mật khẩu thành công');
 });
 
-module.exports = { register, login, refreshToken, logout, getMe, changePassword };
+const forgotPassword = asyncHandler(async (req, res) => {
+  await authService.requestPasswordReset(req.body);
+  // Always return the same message to prevent email enumeration
+  return ApiResponse.ok(res, null,
+    'Nếu email tồn tại trong hệ thống, chúng tôi đã gửi link đặt lại mật khẩu. Vui lòng kiểm tra hộp thư.');
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  await authService.resetPassword(req.body);
+  return ApiResponse.ok(res, null, 'Mật khẩu đã được đặt lại. Hãy đăng nhập bằng mật khẩu mới.');
+});
+
+module.exports = {
+  register, login, refreshToken, logout, getMe, changePassword,
+  forgotPassword, resetPassword,
+};

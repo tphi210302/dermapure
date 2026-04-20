@@ -7,4 +7,7 @@ export const authService = {
   logout:   ()                         => api.post('/auth/logout'),
   getMe:    ()                         => api.get<{ data: User }>('/auth/me'),
   refresh:  (refreshToken: string)     => api.post('/auth/refresh-token', { refreshToken }),
+  forgotPassword: (email: string)      => api.post('/auth/forgot-password', { email }),
+  resetPassword:  (token: string, password: string) =>
+    api.post('/auth/reset-password', { token, password }),
 };

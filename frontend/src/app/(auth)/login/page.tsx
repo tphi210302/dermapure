@@ -113,6 +113,11 @@ function LoginContent() {
               </button>
             </div>
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+            <div className="text-right mt-1.5">
+              <Link href="/forgot-password" className="text-xs text-primary-600 font-semibold hover:underline">
+                Quên mật khẩu?
+              </Link>
+            </div>
           </div>
 
           {/* Submit */}
