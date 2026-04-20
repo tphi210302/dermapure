@@ -71,7 +71,7 @@ const login = async ({ identifier, email, phone, password }) => {
     '+password +refreshToken +loginAttempts +lockUntil +lockCount'
   );
   if (!user) throw ApiError.unauthorized('Email/SĐT hoặc mật khẩu không đúng');
-  if (!user.isActive) throw ApiError.forbidden('Your account has been deactivated');
+  if (!user.isActive) throw ApiError.forbidden('Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ CSKH để được hỗ trợ.');
 
   // Check if account is currently locked
   if (user.lockUntil && user.lockUntil > Date.now()) {

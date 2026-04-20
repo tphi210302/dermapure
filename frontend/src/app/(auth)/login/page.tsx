@@ -20,6 +20,8 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
   const [errors, setErrors]   = useState<Record<string, string>>({});
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [failCount,  setFailCount]  = useState(0);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -30,6 +32,7 @@ function LoginContent() {
   const set = (k: string, v: string) => {
     setForm((p) => ({ ...p, [k]: v }));
     if (errors[k]) setErrors((p) => ({ ...p, [k]: '' }));
+    if (loginError) setLoginError(null);
   };
 
   const validate = () => {
@@ -42,6 +45,7 @@ function LoginContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError(null);
     if (!validate()) return;
     setLoading(true);
     try {
@@ -49,7 +53,9 @@ function LoginContent() {
       toast.success('Chào mừng trở lại!');
       router.push(searchParams.get('redirect') || '/');
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      const msg = getErrorMessage(err);
+      setLoginError(msg);
+      setFailCount((n) => n + 1);
     } finally {
       setLoading(false);
     }
@@ -66,6 +72,27 @@ function LoginContent() {
       {/* Card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-card-lg p-7">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Inline error banner */}
+          {loginError && (
+            <div className="rounded-xl border-2 border-red-200 bg-red-50 px-4 py-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
+              <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0 mt-0.5">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-red-800 leading-snug">Đăng nhập thất bại</p>
+                <p className="text-xs text-red-700 mt-0.5 leading-relaxed">{loginError}</p>
+                {failCount >= 2 && !/tạm khóa|tạm khoá|bị khóa|bị khoá/i.test(loginError) && (
+                  <p className="text-xs text-red-700 mt-1.5">
+                    💡 Nếu quên mật khẩu,{' '}
+                    <Link href="/forgot-password" className="font-bold underline hover:text-red-900">nhấn vào đây để đặt lại</Link>.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Email or Phone */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email hoặc Số điện thoại</label>
