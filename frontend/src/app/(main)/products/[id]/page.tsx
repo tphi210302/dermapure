@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '@/types';
+import { Product, PaginatedResponse } from '@/types';
 import { productService } from '@/services/product.service';
 import { formatPrice, DISCOUNT_PERCENT, cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
+import ProductCard from '@/components/product/ProductCard';
 
 const StarRating = ({ value, count }: { value: number; count?: number }) => (
   <div className="flex items-center gap-1.5">
@@ -43,14 +44,34 @@ export default function ProductDetailPage() {
   const [activeImg, setActiveImg] = useState(0);
   const [adding, setAdding]   = useState(false);
   const [tab, setTab]         = useState<'desc' | 'info'>('desc');
+  const [related, setRelated] = useState<Product[]>([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
   const { addToCart }         = useCart();
 
   useEffect(() => {
+    setActiveImg(0);
+    setQty(1);
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     productService.getById(id)
       .then(({ data }) => setProduct(data.data))
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Fetch related products from the same category (excluding current)
+  useEffect(() => {
+    if (!product) { setRelated([]); return; }
+    const categoryId = typeof product.category === 'object' ? product.category?._id : product.category;
+    if (!categoryId) { setRelated([]); return; }
+    setRelatedLoading(true);
+    productService.getAll({ category: categoryId, limit: 10, sort: '-createdAt' })
+      .then(({ data }: any) => {
+        const resp = data as PaginatedResponse<Product>;
+        setRelated(resp.data.items.filter((p) => p._id !== product._id).slice(0, 8));
+      })
+      .catch(() => setRelated([]))
+      .finally(() => setRelatedLoading(false));
+  }, [product?._id]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddToCart = async () => {
     if (!product || adding) return;
@@ -384,6 +405,46 @@ export default function ProductDetailPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* ── Related products ──────────────────────── */}
+      {(relatedLoading || related.length > 0) && (
+        <section className="mt-14">
+          <div className="flex items-end justify-between gap-3 mb-5 flex-wrap">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">Sản phẩm liên quan</h2>
+              <p className="text-sm text-gray-500 mt-0.5">
+                {category ? `Trong danh mục "${category.name}"` : 'Có thể bạn cũng thích'}
+              </p>
+            </div>
+            {category && (
+              <Link href={`/products?category=${category._id}`}
+                className="text-xs font-bold text-primary-600 hover:text-primary-700 hover:underline">
+                Xem tất cả →
+              </Link>
+            )}
+          </div>
+
+          {relatedLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="skeleton" style={{ paddingBottom: '100%' }} />
+                  <div className="p-4 space-y-2">
+                    <div className="skeleton h-3 w-20 rounded" />
+                    <div className="skeleton h-4 w-full rounded" />
+                    <div className="skeleton h-4 w-2/3 rounded" />
+                    <div className="skeleton h-9 w-full rounded-xl mt-3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {related.map((p) => <ProductCard key={p._id} product={p} />)}
+            </div>
+          )}
+        </section>
       )}
     </div>
   );
