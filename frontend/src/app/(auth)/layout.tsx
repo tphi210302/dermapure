@@ -52,9 +52,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </footer>
 
-      {/* Customer-care contact icons — compact horizontal row at bottom-right so
-          they don't overlap the centered login card. */}
-      <FloatContact compact />
+      {/* Customer-care icons — hotline already in footer, so hide it here to save space */}
+      <FloatContact hideHotline />
     </div>
   );
 }
