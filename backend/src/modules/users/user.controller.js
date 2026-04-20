@@ -21,12 +21,12 @@ const getUserById = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-  const user = await userService.updateUser(req.params.id, req.body);
+  const user = await userService.updateUser(req.params.id, req.body, { actorId: req.user.id });
   return ApiResponse.ok(res, user, 'User updated');
 });
 
 const deleteUser = asyncHandler(async (req, res) => {
-  await userService.deleteUser(req.params.id);
+  await userService.deleteUser(req.params.id, { actorId: req.user.id });
   return ApiResponse.ok(res, null, 'User deleted');
 });
 

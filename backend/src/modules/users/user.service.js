@@ -56,9 +56,35 @@ const getUserById = async (id) => {
   return user;
 };
 
-const updateUser = async (id, data) => {
+const updateUser = async (id, data, { actorId } = {}) => {
   const user = await User.findById(id);
   if (!user) throw ApiError.notFound('User not found');
+
+  // Self-lockout guard: admin editing themselves cannot demote role or deactivate
+  const isSelf = actorId && actorId.toString() === user._id.toString();
+  if (isSelf && user.role === 'admin') {
+    if (data.role !== undefined && data.role !== 'admin') {
+      throw ApiError.badRequest('Không thể tự hạ quyền admin của chính mình. Nhờ admin khác thực hiện.');
+    }
+    if (data.isActive === false) {
+      throw ApiError.badRequest('Không thể tự vô hiệu hoá tài khoản admin của chính mình.');
+    }
+  }
+
+  // Last-admin guard: demoting or deactivating the only remaining active admin is not allowed
+  const wouldRemoveAdminStatus =
+    (user.role === 'admin' && data.role !== undefined && data.role !== 'admin') ||
+    (user.role === 'admin' && user.isActive && data.isActive === false);
+  if (wouldRemoveAdminStatus) {
+    const otherActiveAdmins = await User.countDocuments({
+      _id: { $ne: user._id },
+      role: 'admin',
+      isActive: true,
+    });
+    if (otherActiveAdmins === 0) {
+      throw ApiError.badRequest('Đây là admin active duy nhất — không thể đổi vai trò hoặc vô hiệu hoá.');
+    }
+  }
 
   // Email uniqueness (if changed)
   if (data.email !== undefined) {
@@ -103,7 +129,10 @@ const updateUser = async (id, data) => {
   return user.toSafeObject();
 };
 
-const deleteUser = async (id) => {
+const deleteUser = async (id, { actorId } = {}) => {
+  if (actorId && actorId.toString() === id.toString()) {
+    throw ApiError.badRequest('Không thể tự xoá tài khoản của chính mình.');
+  }
   const user = await User.findByIdAndDelete(id);
   if (!user) throw ApiError.notFound('User not found');
 };
