@@ -56,6 +56,7 @@ function LoginContent() {
       const msg = getErrorMessage(err);
       setLoginError(msg);
       setFailCount((n) => n + 1);
+      setForm((p) => ({ ...p, password: '' })); // clear password only; keep identifier
     } finally {
       setLoading(false);
     }
