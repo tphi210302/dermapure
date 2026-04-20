@@ -10,8 +10,10 @@ interface Props {
 }
 
 export default function FloatContact({ compact = false }: Props) {
+  // Compact: bottom-centered horizontal row on mobile (below the form card),
+  // bottom-right on desktop (where the card is a small centered island).
   const containerCls = compact
-    ? 'fixed right-3 bottom-3 z-40 flex flex-row items-center gap-2'
+    ? 'fixed z-40 flex flex-row items-center gap-2 left-1/2 -translate-x-1/2 bottom-3 md:left-auto md:right-4 md:translate-x-0 md:bottom-4'
     : 'fixed right-3 bottom-20 md:bottom-28 md:right-4 z-40 flex flex-col items-center gap-2';
 
   const size = compact ? 'h-9 w-9' : 'h-10 w-10 md:h-12 md:w-12';
