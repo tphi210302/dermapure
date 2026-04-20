@@ -52,8 +52,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </footer>
 
-      {/* Customer-care floating contact icons (Zalo / FB / Phone) */}
-      <FloatContact />
+      {/* Customer-care contact icons — compact horizontal row at bottom-right so
+          they don't overlap the centered login card. */}
+      <FloatContact compact />
     </div>
   );
 }
