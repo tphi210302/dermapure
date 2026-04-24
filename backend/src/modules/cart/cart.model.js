@@ -15,6 +15,11 @@ const cartItemSchema = new mongoose.Schema(
       min: [1, 'Quantity must be at least 1'],
       default: 1,
     },
+    // Optional — only set when the product uses variants. Stores the Product.variants._id
+    // so we can resolve label/price at checkout time (price may have changed since add-to-cart).
+    variantId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
   },
   { _id: false }
 );

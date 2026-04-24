@@ -318,23 +318,31 @@ export default function CheckoutPage() {
             </h2>
 
             <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-              {cart.items.map((item) => (
-                <div key={item.product._id} className="flex items-center gap-3">
-                  <div className="relative h-11 w-11 rounded-lg overflow-hidden bg-slate-50 shrink-0 border border-gray-100">
-                    <Image
-                      src={cloudinaryThumb(item.product.images?.[0] || 'https://placehold.co/44x44/f0f9ff/0369a1?text=P', 100)}
-                      alt={item.product.name} fill className="object-cover" sizes="44px"
-                    />
+              {cart.items.map((item) => {
+                const variant = item.variantId ? item.product.variants?.find((v) => v._id === item.variantId) : null;
+                const unitPrice = variant?.price ?? item.product.price;
+                const lineKey = `${item.product._id}-${item.variantId || ''}`;
+                return (
+                  <div key={lineKey} className="flex items-center gap-3">
+                    <div className="relative h-11 w-11 rounded-lg overflow-hidden bg-slate-50 shrink-0 border border-gray-100">
+                      <Image
+                        src={cloudinaryThumb(variant?.image || item.product.images?.[0] || 'https://placehold.co/44x44/f0f9ff/0369a1?text=P', 100)}
+                        alt={item.product.name} fill className="object-cover" sizes="44px"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-800 truncate">{item.product.name}</p>
+                      <p className="text-[10px] text-gray-400">
+                        {variant && <span className="text-rose-600 font-bold">{variant.label} · </span>}
+                        × {item.quantity}
+                      </p>
+                    </div>
+                    <p className="text-xs font-semibold text-gray-900 shrink-0">
+                      {formatPrice(unitPrice * item.quantity)}
+                    </p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-gray-800 truncate">{item.product.name}</p>
-                    <p className="text-xs text-gray-400">× {item.quantity}</p>
-                  </div>
-                  <p className="text-xs font-semibold text-gray-900 shrink-0">
-                    {formatPrice(item.product.price * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Affiliate notice */}

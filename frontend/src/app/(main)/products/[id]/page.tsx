@@ -47,28 +47,47 @@ export default function ProductDetailPage() {
   const [tab, setTab]         = useState<'desc' | 'info'>('desc');
   const [related, setRelated] = useState<Product[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const { addToCart }         = useCart();
 
   useEffect(() => {
     setActiveImg(0);
     setQty(1);
+    setSelectedVariantId(null);
+    setZoomOpen(false);
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     productService.getById(id)
-      .then(({ data }) => setProduct(data.data))
+      .then(({ data }) => {
+        setProduct(data.data);
+        // Auto-select first variant if product has variants
+        if (data.data?.variants && data.data.variants.length > 0) {
+          setSelectedVariantId(data.data.variants[0]._id);
+        }
+      })
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Keyboard arrow keys navigate the gallery
+  // Keyboard arrow keys navigate the gallery; Escape closes zoom
   useEffect(() => {
     if (!product || product.images.length <= 1) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft')  setActiveImg((i) => (i - 1 + product.images.length) % product.images.length);
       if (e.key === 'ArrowRight') setActiveImg((i) => (i + 1) % product.images.length);
+      if (e.key === 'Escape')     setZoomOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [product?.images?.length]);  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Lock body scroll while zoom lightbox is open
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [zoomOpen]);
 
   // Fetch related products from the same category (excluding current)
   useEffect(() => {
@@ -87,8 +106,9 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!product || adding) return;
+    if (hasVariants && !selectedVariantId) return;
     setAdding(true);
-    await addToCart(product._id, qty);
+    await addToCart(product._id, qty, selectedVariantId || undefined);
     setTimeout(() => setAdding(false), 1000);
   };
 
@@ -126,10 +146,18 @@ export default function ProductDetailPage() {
     );
   }
 
-  const discount  = DISCOUNT_PERCENT(product.price, product.comparePrice);
+  const hasVariants = !!(product.variants && product.variants.length > 0);
+  const selectedVariant = hasVariants
+    ? product.variants!.find((v) => v._id === selectedVariantId) || null
+    : null;
+  const effectivePrice        = selectedVariant?.price ?? product.price;
+  const effectiveComparePrice = selectedVariant?.comparePrice ?? product.comparePrice;
+  const effectiveStock        = selectedVariant?.stock ?? product.stock;
+
+  const discount  = DISCOUNT_PERCENT(effectivePrice, effectiveComparePrice);
   const category  = typeof product.category === 'object' ? product.category : null;
-  const isOutOfStock = product.stock === 0;
-  const isLowStock   = product.stock > 0 && product.stock <= 5;
+  const isOutOfStock = effectiveStock === 0;
+  const isLowStock   = effectiveStock > 0 && effectiveStock <= 5;
   const thumbnail = cloudinaryHero(product.images?.[activeImg] || 'https://placehold.co/600x600/f0f9ff/0369a1?text=No+Image');
 
   return (
@@ -154,7 +182,10 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14">
         {/* ── Images ─────────────────────────────── */}
         <div>
-          <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-gray-100 group">
+          <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-gray-100 group cursor-zoom-in"
+            onClick={() => setZoomOpen(true)}
+            role="button"
+            aria-label="Phóng to ảnh">
             <Image
               src={thumbnail}
               alt={product.name}
@@ -164,12 +195,17 @@ export default function ProductDetailPage() {
               sizes="(max-width: 768px) 100vw, 50vw"
             />
 
+            {/* Zoom hint */}
+            <span className="absolute top-3 right-3 z-10 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              🔍 Phóng to
+            </span>
+
             {/* Prev/Next arrows — only when multiple images */}
             {product.images.length > 1 && (
               <>
                 <button
                   type="button"
-                  onClick={() => setActiveImg((i) => (i - 1 + product.images.length) % product.images.length)}
+                  onClick={(e) => { e.stopPropagation(); setActiveImg((i) => (i - 1 + product.images.length) % product.images.length); }}
                   aria-label="Ảnh trước"
                   className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:scale-105 transition-all"
                 >
@@ -179,7 +215,7 @@ export default function ProductDetailPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveImg((i) => (i + 1) % product.images.length)}
+                  onClick={(e) => { e.stopPropagation(); setActiveImg((i) => (i + 1) % product.images.length); }}
                   aria-label="Ảnh tiếp"
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:scale-105 transition-all"
                 >
@@ -199,7 +235,7 @@ export default function ProductDetailPage() {
                     <button
                       key={i}
                       type="button"
-                      onClick={() => setActiveImg(i)}
+                      onClick={(e) => { e.stopPropagation(); setActiveImg(i); }}
                       aria-label={`Ảnh ${i + 1}`}
                       className={cn(
                         'h-2 rounded-full transition-all',
@@ -290,10 +326,10 @@ export default function ProductDetailPage() {
           <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-4 mb-5">
             <div className="flex items-baseline gap-3">
               <span className={cn('text-3xl font-extrabold', discount > 0 ? 'text-red-600' : 'text-gray-900')}>
-                {formatPrice(product.price)}
+                {formatPrice(effectivePrice)}
               </span>
-              {product.comparePrice && product.comparePrice > product.price && (
-                <span className="text-lg text-gray-400 line-through">{formatPrice(product.comparePrice)}</span>
+              {effectiveComparePrice && effectiveComparePrice > effectivePrice && (
+                <span className="text-lg text-gray-400 line-through">{formatPrice(effectiveComparePrice)}</span>
               )}
               {discount > 0 && (
                 <span className="ml-auto bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-lg">
@@ -301,8 +337,44 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Mỗi {product.unit}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Mỗi {product.unit}{selectedVariant && ` · Loại: ${selectedVariant.label}`}
+            </p>
           </div>
+
+          {/* Variant picker */}
+          {hasVariants && (
+            <div className="mb-5">
+              <p className="text-xs font-bold text-gray-700 mb-2">
+                Chọn loại <span className="text-rose-500">*</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {product.variants!.map((v) => {
+                  const isActive = v._id === selectedVariantId;
+                  const isOOS    = v.stock === 0;
+                  return (
+                    <button
+                      key={v._id}
+                      type="button"
+                      onClick={() => !isOOS && setSelectedVariantId(v._id)}
+                      disabled={isOOS}
+                      className={cn(
+                        'px-4 py-2 rounded-xl border-2 text-sm font-bold transition-all',
+                        isOOS
+                          ? 'border-gray-200 bg-gray-50 text-gray-300 line-through cursor-not-allowed'
+                          : isActive
+                            ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-md'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                      )}
+                    >
+                      {v.label}
+                      {isOOS && <span className="ml-1 text-[10px] font-normal">(hết)</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Short description */}
           {product.shortDescription && (
@@ -321,12 +393,12 @@ export default function ProductDetailPage() {
             ) : isLowStock ? (
               <div className="flex items-center gap-2 text-amber-600 text-sm font-medium">
                 <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                Chỉ còn {product.stock} — đặt ngay!
+                Chỉ còn {effectiveStock} — đặt ngay!
               </div>
             ) : (
               <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                Còn hàng ({product.stock} sản phẩm)
+                Còn hàng ({effectiveStock} sản phẩm)
               </div>
             )}
           </div>
@@ -343,7 +415,7 @@ export default function ProductDetailPage() {
                 </button>
                 <span className="w-10 text-center text-sm font-bold text-gray-900">{qty}</span>
                 <button
-                  onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
+                  onClick={() => setQty((q) => Math.min(effectiveStock, q + 1))}
                   className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-gray-700 font-bold transition-colors"
                 >
                   +
@@ -373,7 +445,7 @@ export default function ProductDetailPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                         d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
-                    Thêm vào giỏ — {formatPrice(product.price * qty)}
+                    Thêm vào giỏ — {formatPrice(effectivePrice * qty)}
                   </>
                 )}
               </button>
@@ -505,6 +577,72 @@ export default function ProductDetailPage() {
             </div>
           )}
         </section>
+      )}
+
+      {/* ── Zoom lightbox ────────────────────────── */}
+      {zoomOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setZoomOpen(false)}
+        >
+          {/* Close */}
+          <button
+            type="button"
+            onClick={() => setZoomOpen(false)}
+            className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center z-10 backdrop-blur-sm"
+            aria-label="Đóng"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+
+          {/* Counter */}
+          {product.images.length > 1 && (
+            <span className="absolute top-4 left-1/2 -translate-x-1/2 bg-white/10 text-white text-sm font-semibold px-3 py-1.5 rounded-full backdrop-blur-sm z-10">
+              {activeImg + 1} / {product.images.length}
+            </span>
+          )}
+
+          {/* Prev/Next */}
+          {product.images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setActiveImg((i) => (i - 1 + product.images.length) % product.images.length); }}
+                aria-label="Ảnh trước"
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center z-10 backdrop-blur-sm"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setActiveImg((i) => (i + 1) % product.images.length); }}
+                aria-label="Ảnh tiếp"
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center z-10 backdrop-blur-sm"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Image */}
+          <div
+            className="relative w-full h-full max-w-5xl max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={cloudinaryHero(product.images?.[activeImg] || 'https://placehold.co/1200x1200/f0f9ff/0369a1?text=No+Image')}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
       )}
     </div>
   );

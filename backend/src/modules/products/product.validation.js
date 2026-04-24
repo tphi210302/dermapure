@@ -2,6 +2,16 @@
 
 const Joi = require('joi');
 
+const variantSchema = Joi.object({
+  _id:          Joi.string().hex().length(24).optional(),
+  label:        Joi.string().max(80).required(),
+  price:        Joi.number().min(0).required(),
+  comparePrice: Joi.number().min(0).optional().allow(null),
+  stock:        Joi.number().integer().min(0).required(),
+  sku:          Joi.string().allow('').optional(),
+  image:        Joi.string().allow('').optional(),
+});
+
 const create = Joi.object({
   name:                 Joi.string().max(200).required(),
   description:          Joi.string().optional(),
@@ -21,6 +31,7 @@ const create = Joi.object({
   ingredients:          Joi.string().optional(),
   dosage:               Joi.string().optional(),
   warnings:             Joi.string().optional(),
+  variants:             Joi.array().items(variantSchema).optional(),
 });
 
 const update = Joi.object({
@@ -42,6 +53,7 @@ const update = Joi.object({
   ingredients:          Joi.string().optional(),
   dosage:               Joi.string().optional(),
   warnings:             Joi.string().optional(),
+  variants:             Joi.array().items(variantSchema).optional(),
 });
 
 module.exports = { create, update };

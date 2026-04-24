@@ -227,6 +227,9 @@ export default function OrderDetailPage() {
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {product?.name || 'Sản phẩm đã bị xóa'}
                   </p>
+                  {item.variantLabel && (
+                    <span className="inline-flex items-center text-[10px] font-bold bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded mt-0.5">Loại: {item.variantLabel}</span>
+                  )}
                   <p className="text-xs text-gray-400">{formatPrice(item.price)} × {item.quantity}</p>
                 </div>
                 <p className="text-sm font-bold text-gray-900 shrink-0">

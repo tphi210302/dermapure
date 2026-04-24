@@ -58,6 +58,16 @@ export interface Category {
 }
 
 // ── Product ───────────────────────────────────────────────
+export interface ProductVariant {
+  _id: string;
+  label: string;
+  price: number;
+  comparePrice?: number;
+  stock: number;
+  sku?: string;
+  image?: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
@@ -80,6 +90,7 @@ export interface Product {
   ingredients?: string;
   dosage?: string;
   warnings?: string;
+  variants?: ProductVariant[];
   createdAt: string;
   updatedAt: string;
 }
@@ -88,6 +99,7 @@ export interface Product {
 export interface CartItem {
   product: Product;
   quantity: number;
+  variantId?: string;
 }
 
 export interface Cart {
@@ -111,6 +123,8 @@ export interface OrderItem {
   product: Product;
   quantity: number;
   price: number;
+  variantId?: string;
+  variantLabel?: string;
 }
 
 export interface StatusHistory {

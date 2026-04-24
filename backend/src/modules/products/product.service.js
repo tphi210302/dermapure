@@ -104,9 +104,22 @@ const remove = async (id) => {
  * Decrement stock atomically (used during checkout).
  * Throws if stock is insufficient.
  */
-const decrementStock = async (id, quantity, session) => {
+const decrementStock = async (id, quantity, session, variantId) => {
   const options = { new: true };
   if (session) options.session = session;
+
+  // Per-variant stock
+  if (variantId) {
+    const product = await Product.findOneAndUpdate(
+      { _id: id, 'variants._id': variantId, 'variants.stock': { $gte: quantity } },
+      { $inc: { 'variants.$.stock': -quantity } },
+      options
+    );
+    if (!product) throw ApiError.badRequest('Hết hàng cho loại đã chọn');
+    return product;
+  }
+
+  // Top-level stock
   const product = await Product.findOneAndUpdate(
     { _id: id, stock: { $gte: quantity } },
     { $inc: { stock: -quantity } },

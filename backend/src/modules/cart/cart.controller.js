@@ -15,12 +15,12 @@ const addItem    = asyncHandler(async (req, res) => {
 });
 
 const updateItem = asyncHandler(async (req, res) => {
-  const cart = await cartService.updateItem(req.user.id, req.params.productId, req.body.quantity);
+  const cart = await cartService.updateItem(req.user.id, req.params.productId, req.body.quantity, req.body.variantId);
   return ApiResponse.ok(res, cart, 'Cart updated');
 });
 
 const removeItem = asyncHandler(async (req, res) => {
-  const cart = await cartService.removeItem(req.user.id, req.params.productId);
+  const cart = await cartService.removeItem(req.user.id, req.params.productId, req.body?.variantId || req.query.variantId);
   return ApiResponse.ok(res, cart, 'Item removed');
 });
 

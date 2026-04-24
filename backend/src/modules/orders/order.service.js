@@ -35,15 +35,35 @@ const checkout = async (userId, { shippingAddress, note, voucherCode, affiliateC
     if (!product || !product.isActive) {
       throw ApiError.badRequest(`Product "${product?.name}" is no longer available`);
     }
-    if (product.stock < item.quantity) {
-      throw ApiError.badRequest(`Insufficient stock for "${product.name}". Available: ${product.stock}`);
+
+    // Resolve per-variant price/stock/label if the cart item has a variantId
+    let unitPrice = product.price;
+    let availableStock = product.stock;
+    let variantId;
+    let variantLabel;
+    if (item.variantId && product.variants && product.variants.length > 0) {
+      const variant = product.variants.id(item.variantId);
+      if (!variant) {
+        throw ApiError.badRequest(`Loại "${item.variantId}" của "${product.name}" không còn tồn tại`);
+      }
+      unitPrice = variant.price;
+      availableStock = variant.stock;
+      variantId = variant._id;
+      variantLabel = variant.label;
+    }
+
+    if (availableStock < item.quantity) {
+      throw ApiError.badRequest(
+        `"${product.name}"${variantLabel ? ` (${variantLabel})` : ''} chỉ còn ${availableStock} sản phẩm`
+      );
     }
     orderItems.push({
       product:  product._id,
       quantity: item.quantity,
-      price:    product.price,
+      price:    unitPrice,
+      ...(variantId && { variantId, variantLabel }),
     });
-    subtotal += product.price * item.quantity;
+    subtotal += unitPrice * item.quantity;
   }
 
   // 3. Compute shipping fee (free over 500K)
@@ -65,9 +85,9 @@ const checkout = async (userId, { shippingAddress, note, voucherCode, affiliateC
 
   const totalAmount = Math.max(0, subtotal + shippingFee - discount);
 
-  // 5. Decrement stock for each item
+  // 5. Decrement stock for each item (per-variant when applicable)
   for (const item of cart.items) {
-    await decrementStock(item.product._id, item.quantity, null);
+    await decrementStock(item.product._id, item.quantity, null, item.variantId || null);
   }
 
   // 5b. Resolve affiliate code → staff user

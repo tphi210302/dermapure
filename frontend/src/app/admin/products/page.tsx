@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Product, PaginatedResponse, Category } from '@/types';
+import { Product, PaginatedResponse, Category, ProductVariant } from '@/types';
 import { productService } from '@/services/product.service';
 import { categoryService } from '@/services/category.service';
 import { formatPrice } from '@/lib/utils';
@@ -50,6 +50,12 @@ export default function AdminProductsPage() {
   const [editing,    setEditing]    = useState<Product | null>(null);
   const [form,       setForm]       = useState(EMPTY_FORM);
   const [saving,     setSaving]     = useState(false);
+  const [variants,   setVariants]   = useState<Array<Partial<ProductVariant>>>([]);
+
+  const addVariant = () => setVariants((v) => [...v, { label: '', price: 0, stock: 0 }]);
+  const updateVariant = (i: number, patch: Partial<ProductVariant>) =>
+    setVariants((v) => v.map((row, idx) => (idx === i ? { ...row, ...patch } : row)));
+  const removeVariant = (i: number) => setVariants((v) => v.filter((_, idx) => idx !== i));
 
   const fetchProducts = useCallback(async (p = page) => {
     setLoading(true);
@@ -68,9 +74,10 @@ export default function AdminProductsPage() {
     categoryService.getAll().then(({ data }) => setCategories((data as { data: Category[] }).data));
   }, [page]); // eslint-disable-line
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY_FORM); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); setForm(EMPTY_FORM); setVariants([]); setModalOpen(true); };
   const openEdit   = (p: Product) => {
     setEditing(p);
+    setVariants(p.variants?.map((v) => ({ ...v })) || []);
     setForm({
       name:                 p.name,
       description:          p.description || '',
@@ -126,6 +133,17 @@ export default function AdminProductsPage() {
         ingredients:          form.ingredients || undefined,
         dosage:               form.dosage || undefined,
         warnings:             form.warnings || undefined,
+        variants: variants
+          .filter((v) => v.label && v.price != null)
+          .map((v) => ({
+            ...(v._id && { _id: v._id }),
+            label:        String(v.label).trim(),
+            price:        Number(v.price || 0),
+            stock:        Number(v.stock || 0),
+            ...(v.comparePrice && { comparePrice: Number(v.comparePrice) }),
+            ...(v.sku   && { sku:   v.sku }),
+            ...(v.image && { image: v.image }),
+          })),
       };
       if (editing) {
         await productService.update(editing._id, payload);
@@ -456,6 +474,70 @@ export default function AdminProductsPage() {
                   value={form.warnings}
                   onChange={(e) => setForm((p) => ({ ...p, warnings: e.target.value }))} />
               </div>
+            </div>
+          </div>
+
+          {/* ── Variants block ── */}
+          <div className="sm:col-span-2">
+            <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm font-bold text-gray-800">📦 Loại / Biến thể</p>
+                  <p className="text-[11px] text-gray-500">Vd: 30ml / 50ml / 100ml. Bỏ trống nếu sản phẩm chỉ có 1 loại.</p>
+                </div>
+                <button type="button" onClick={addVariant}
+                  className="text-xs font-bold text-primary-600 hover:text-primary-700">
+                  + Thêm loại
+                </button>
+              </div>
+
+              {variants.length === 0 ? (
+                <p className="text-[11px] text-gray-400 italic">Chưa có loại nào — dùng giá + tồn kho chính ở trên</p>
+              ) : (
+                <div className="space-y-2">
+                  {variants.map((v, i) => (
+                    <div key={i} className="grid grid-cols-12 gap-2 items-center bg-white border border-gray-200 rounded-xl p-2">
+                      <input
+                        className="col-span-3 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                        placeholder="Tên (30ml)"
+                        value={v.label || ''}
+                        onChange={(e) => updateVariant(i, { label: e.target.value })}
+                      />
+                      <input
+                        type="number" min={0}
+                        className="col-span-3 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                        placeholder="Giá bán"
+                        value={v.price ?? ''}
+                        onChange={(e) => updateVariant(i, { price: Number(e.target.value) })}
+                      />
+                      <input
+                        type="number" min={0}
+                        className="col-span-2 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                        placeholder="So sánh"
+                        value={v.comparePrice ?? ''}
+                        onChange={(e) => updateVariant(i, { comparePrice: Number(e.target.value) || undefined })}
+                      />
+                      <input
+                        type="number" min={0}
+                        className="col-span-2 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                        placeholder="Tồn"
+                        value={v.stock ?? ''}
+                        onChange={(e) => updateVariant(i, { stock: Number(e.target.value) })}
+                      />
+                      <input
+                        className="col-span-1 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                        placeholder="SKU"
+                        value={v.sku || ''}
+                        onChange={(e) => updateVariant(i, { sku: e.target.value })}
+                      />
+                      <button type="button" onClick={() => removeVariant(i)}
+                        className="col-span-1 text-red-500 hover:text-red-700 text-lg leading-none"
+                        title="Xoá">×</button>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-gray-400 mt-1">Giá + tồn chính ở trên chỉ dùng khi danh sách này trống.</p>
+                </div>
+              )}
             </div>
           </div>
 

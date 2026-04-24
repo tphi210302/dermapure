@@ -9,6 +9,7 @@ import { cmsService, type Banner, type SiteSetting } from '@/services/cms.servic
 import { formatPrice } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import ProductCard from '@/components/product/ProductCard';
+import { cloudinaryCard } from '@/lib/cloudinary';
 
 /* ─────────────────── static data ─────────────────── */
 
@@ -263,7 +264,7 @@ export default function HomePage() {
                 style={{ aspectRatio: '1 / 1' }}>
                 {products[0]?.images?.[0] && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={products[0].images[0]} alt={products[0].name}
+                  <img src={cloudinaryCard(products[0].images[0])} alt={products[0].name}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 )}
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(136,19,55,0.9), rgba(136,19,55,0) 60%)' }} />
@@ -280,7 +281,7 @@ export default function HomePage() {
                   style={{ aspectRatio: '1 / 1' }}>
                   {p.images?.[0] && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.images[0]} alt={p.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    <img src={cloudinaryCard(p.images[0])} alt={p.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   )}
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75), transparent 55%)' }} />
                   <div className="absolute bottom-0 left-0 right-0 p-2 text-white">

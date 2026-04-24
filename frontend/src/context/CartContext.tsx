@@ -22,9 +22,9 @@ interface CartContextValue {
   showMiniCart: boolean;
   openMiniCart: () => void;
   closeMiniCart: () => void;
-  addToCart: (productId: string, quantity?: number) => Promise<void>;
-  updateQuantity: (productId: string, quantity: number) => Promise<void>;
-  removeFromCart: (productId: string) => Promise<void>;
+  addToCart: (productId: string, quantity?: number, variantId?: string) => Promise<void>;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => Promise<void>;
+  removeFromCart: (productId: string, variantId?: string) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
 }
@@ -55,14 +55,14 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => { fetchCart(); }, [fetchCart]);
 
-  const addToCart = useCallback(async (productId: string, quantity = 1) => {
+  const addToCart = useCallback(async (productId: string, quantity = 1, variantId?: string) => {
     if (!isAuthenticated) {
       toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
       router.push('/login');
       return;
     }
     try {
-      const { data } = await api.post('/cart/items', { productId, quantity });
+      const { data } = await api.post('/cart/items', { productId, quantity, ...(variantId && { variantId }) });
       setCart(data.data);
       setShowMiniCart(true);
     } catch (err: unknown) {
@@ -73,18 +73,19 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isAuthenticated, router]);
 
-  const updateQuantity = useCallback(async (productId: string, quantity: number) => {
+  const updateQuantity = useCallback(async (productId: string, quantity: number, variantId?: string) => {
     try {
-      const { data } = await api.patch(`/cart/items/${productId}`, { quantity });
+      const { data } = await api.patch(`/cart/items/${productId}`, { quantity, ...(variantId && { variantId }) });
       setCart(data.data);
     } catch {
       toast.error('Failed to update cart');
     }
   }, []);
 
-  const removeFromCart = useCallback(async (productId: string) => {
+  const removeFromCart = useCallback(async (productId: string, variantId?: string) => {
     try {
-      const { data } = await api.delete(`/cart/items/${productId}`);
+      const url = variantId ? `/cart/items/${productId}?variantId=${variantId}` : `/cart/items/${productId}`;
+      const { data } = await api.delete(url);
       setCart(data.data);
       toast.success('Item removed');
     } catch {
@@ -108,11 +109,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
   const cartTotal = useMemo(
     () =>
-      cart?.items.reduce(
-        (sum: number, item: CartItem) =>
-          sum + item.quantity * (typeof item.product === 'object' ? item.product.price : 0),
-        0
-      ) ?? 0,
+      cart?.items.reduce((sum: number, item: CartItem) => {
+        if (typeof item.product !== 'object') return sum;
+        // Use variant price when the item references a variant
+        const variant = item.variantId && item.product.variants?.find((v) => v._id === item.variantId);
+        const unitPrice = variant ? variant.price : item.product.price;
+        return sum + item.quantity * unitPrice;
+      }, 0) ?? 0,
     [cart]
   );
 

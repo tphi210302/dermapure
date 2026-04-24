@@ -87,6 +87,27 @@ const productSchema = new mongoose.Schema(
     ingredients: { type: String, trim: true },
     dosage:      { type: String, trim: true },
     warnings:    { type: String, trim: true },
+
+    // ── Variants ────────────────────────────────────────────
+    // Optional. When non-empty, the product is sold per-variant and the
+    // top-level price/stock become the "default/fallback" for legacy orders.
+    // Each variant has its own label (vd "30ml", "size L"), price, stock.
+    variants: {
+      type: [
+        new mongoose.Schema(
+          {
+            label:        { type: String, trim: true, required: true, maxlength: 80 },
+            price:        { type: Number, required: true, min: 0 },
+            comparePrice: { type: Number, min: 0 },
+            stock:        { type: Number, required: true, min: 0, default: 0 },
+            sku:          { type: String, trim: true },
+            image:        { type: String, trim: true }, // optional variant-specific image
+          },
+          { _id: true }
+        ),
+      ],
+      default: [],
+    },
   },
   { timestamps: true, versionKey: false }
 );
