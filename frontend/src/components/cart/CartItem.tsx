@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { CartItem as CartItemType } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
+import { cloudinaryThumb } from '@/lib/cloudinary';
 
 interface Props { item: CartItemType; }
 
 export default function CartItem({ item }: Props) {
   const { updateQuantity, removeFromCart } = useCart();
   const product = item.product;
-  const thumbnail = product.images?.[0] || 'https://placehold.co/80x80/f0f9ff/0369a1?text=No+Image';
+  const thumbnail = cloudinaryThumb(product.images?.[0] || 'https://placehold.co/80x80/f0f9ff/0369a1?text=No+Image', 160);
 
   return (
     <div className="flex items-center gap-4 py-5 border-b border-gray-50 last:border-0 group">

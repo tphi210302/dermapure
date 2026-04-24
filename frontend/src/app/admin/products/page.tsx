@@ -12,6 +12,7 @@ import Spinner from '@/components/ui/Spinner';
 import PaginationComp from '@/components/ui/Pagination';
 import toast from 'react-hot-toast';
 import { getErrorMessage } from '@/lib/utils';
+import { cloudinaryCard } from '@/lib/cloudinary';
 
 const EMPTY_FORM = {
   name: '', description: '', shortDescription: '', price: '',
@@ -396,6 +397,22 @@ export default function AdminProductsPage() {
           <div className="sm:col-span-2">
             <Input label="URL ảnh (cách nhau bằng dấu phẩy)" value={form.images}
               onChange={(e) => setForm((p) => ({ ...p, images: e.target.value }))} />
+            {form.images && (
+              <div className="mt-2">
+                <p className="text-[10px] text-gray-500 mb-1.5">
+                  👁 Xem trước (khung vuông 1:1, đệm trắng, có watermark):
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {form.images.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 6).map((url, i) => (
+                    <div key={i} className="relative h-24 w-24 rounded-lg overflow-hidden border border-gray-200 bg-slate-50 shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={cloudinaryCard(url)} alt="" className="h-full w-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="sm:col-span-2">
             <Input label="Tags (cách nhau bằng dấu phẩy)" value={form.tags}

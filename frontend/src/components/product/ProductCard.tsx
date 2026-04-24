@@ -7,6 +7,7 @@ import { Product } from '@/types';
 import { formatPrice, DISCOUNT_PERCENT } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { cn } from '@/lib/utils';
+import { cloudinaryCard } from '@/lib/cloudinary';
 
 interface Props { product: Product; }
 
@@ -28,7 +29,7 @@ export default function ProductCard({ product }: Props) {
   const [wished, setWished] = useState(false);
 
   const discount   = DISCOUNT_PERCENT(product.price, product.comparePrice);
-  const thumbnail  = product.images?.[0] || 'https://placehold.co/400x400/f0f9ff/0369a1?text=No+Image';
+  const thumbnail  = cloudinaryCard(product.images?.[0] || 'https://placehold.co/400x400/f0f9ff/0369a1?text=No+Image');
   const isOutOfStock = product.stock === 0;
   const isLowStock   = product.stock > 0 && product.stock <= 5;
   const categoryName = typeof product.category === 'object' ? product.category.name : '';

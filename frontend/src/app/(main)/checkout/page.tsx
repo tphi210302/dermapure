@@ -12,6 +12,7 @@ import { getErrorMessage, formatPrice } from '@/lib/utils';
 import VietnamAddressPicker from '@/components/address/VietnamAddressPicker';
 import StreetAutocomplete from '@/components/address/StreetAutocomplete';
 import { readAffiliateRef, clearAffiliateRef } from '@/components/affiliate/AffiliateCapture';
+import { cloudinaryThumb } from '@/lib/cloudinary';
 import toast from 'react-hot-toast';
 
 const SHIPPING_FEE      = 30000;
@@ -321,7 +322,7 @@ export default function CheckoutPage() {
                 <div key={item.product._id} className="flex items-center gap-3">
                   <div className="relative h-11 w-11 rounded-lg overflow-hidden bg-slate-50 shrink-0 border border-gray-100">
                     <Image
-                      src={item.product.images?.[0] || 'https://placehold.co/44x44/f0f9ff/0369a1?text=P'}
+                      src={cloudinaryThumb(item.product.images?.[0] || 'https://placehold.co/44x44/f0f9ff/0369a1?text=P', 100)}
                       alt={item.product.name} fill className="object-cover" sizes="44px"
                     />
                   </div>

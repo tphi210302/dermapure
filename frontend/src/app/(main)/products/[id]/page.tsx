@@ -9,6 +9,7 @@ import { productService } from '@/services/product.service';
 import { formatPrice, DISCOUNT_PERCENT, cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/product/ProductCard';
+import { cloudinaryHero, cloudinaryThumb } from '@/lib/cloudinary';
 
 const StarRating = ({ value, count }: { value: number; count?: number }) => (
   <div className="flex items-center gap-1.5">
@@ -118,7 +119,7 @@ export default function ProductDetailPage() {
   const category  = typeof product.category === 'object' ? product.category : null;
   const isOutOfStock = product.stock === 0;
   const isLowStock   = product.stock > 0 && product.stock <= 5;
-  const thumbnail = product.images?.[activeImg] || 'https://placehold.co/600x600/f0f9ff/0369a1?text=No+Image';
+  const thumbnail = cloudinaryHero(product.images?.[activeImg] || 'https://placehold.co/600x600/f0f9ff/0369a1?text=No+Image');
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -184,7 +185,7 @@ export default function ProductDetailPage() {
                       : 'border-transparent hover:border-gray-300'
                   )}
                 >
-                  <Image src={img} alt="" fill className="object-cover" sizes="64px" />
+                  <Image src={cloudinaryThumb(img, 160)} alt="" fill className="object-cover" sizes="64px" />
                 </button>
               ))}
             </div>
