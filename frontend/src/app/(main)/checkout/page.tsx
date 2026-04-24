@@ -332,9 +332,19 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-800 truncate">{item.product.name}</p>
-                      <p className="text-[10px] text-gray-400">
-                        {variant && <span className="text-rose-600 font-bold">{variant.label} · </span>}
-                        × {item.quantity}
+                      <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                        {variant?.colorHex && (
+                          <span
+                            className="inline-block h-2.5 w-2.5 rounded-full border border-white ring-1 ring-rose-200 shrink-0"
+                            style={{ backgroundColor: variant.colorHex }}
+                          />
+                        )}
+                        {variant && (
+                          <span className="text-rose-600 font-bold">
+                            {variant.color ? `${variant.color} · ` : ''}{variant.label} ·
+                          </span>
+                        )}
+                        <span>× {item.quantity}</span>
                       </p>
                     </div>
                     <p className="text-xs font-semibold text-gray-900 shrink-0">

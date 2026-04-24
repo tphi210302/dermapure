@@ -315,43 +315,68 @@ export default function ProductDetailPage() {
               )}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Mỗi {product.unit}{selectedVariant && ` · Loại: ${selectedVariant.label}`}
+              Mỗi {product.unit}
+              {selectedVariant && ` · Loại: ${selectedVariant.color ? `${selectedVariant.color} · ` : ''}${selectedVariant.label}`}
             </p>
           </div>
 
           {/* Variant picker */}
-          {hasVariants && (
-            <div className="mb-5">
-              <p className="text-xs font-bold text-gray-700 mb-2">
-                Chọn loại <span className="text-rose-500">*</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {product.variants!.map((v) => {
-                  const isActive = v._id === selectedVariantId;
-                  const isOOS    = v.stock === 0;
-                  return (
-                    <button
-                      key={v._id}
-                      type="button"
-                      onClick={() => !isOOS && setSelectedVariantId(v._id)}
-                      disabled={isOOS}
-                      className={cn(
-                        'px-4 py-2 rounded-xl border-2 text-sm font-bold transition-all',
-                        isOOS
-                          ? 'border-gray-200 bg-gray-50 text-gray-300 line-through cursor-not-allowed'
-                          : isActive
-                            ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-md'
-                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
-                      )}
-                    >
-                      {v.label}
-                      {isOOS && <span className="ml-1 text-[10px] font-normal">(hết)</span>}
-                    </button>
-                  );
-                })}
+          {hasVariants && (() => {
+            const hasAnyColor = product.variants!.some((v) => v.color || v.colorHex);
+            return (
+              <div className="mb-5">
+                <p className="text-xs font-bold text-gray-700 mb-2">
+                  Chọn loại {hasAnyColor && '/ màu'} <span className="text-rose-500">*</span>
+                  {selectedVariant && (
+                    <span className="ml-2 text-[11px] font-normal text-gray-500">
+                      (đã chọn: <span className="font-semibold text-rose-600">
+                        {selectedVariant.color ? `${selectedVariant.color} · ` : ''}{selectedVariant.label}
+                      </span>)
+                    </span>
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {product.variants!.map((v) => {
+                    const isActive = v._id === selectedVariantId;
+                    const isOOS    = v.stock === 0;
+                    return (
+                      <button
+                        key={v._id}
+                        type="button"
+                        onClick={() => !isOOS && setSelectedVariantId(v._id)}
+                        disabled={isOOS}
+                        title={v.color ? `${v.color} — ${v.label}` : v.label}
+                        className={cn(
+                          'flex items-center gap-2 px-3.5 py-2 rounded-xl border-2 text-sm font-bold transition-all',
+                          isOOS
+                            ? 'border-gray-200 bg-gray-50 text-gray-300 line-through cursor-not-allowed'
+                            : isActive
+                              ? 'border-rose-500 bg-rose-50 text-rose-700 shadow-md'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-400'
+                        )}
+                      >
+                        {v.colorHex && (
+                          <span
+                            className={cn(
+                              'inline-block h-5 w-5 rounded-full border-2 shrink-0',
+                              isActive ? 'border-rose-400' : 'border-white ring-1 ring-gray-200'
+                            )}
+                            style={{ backgroundColor: v.colorHex }}
+                          />
+                        )}
+                        <span>
+                          {v.color && <span className="font-bold">{v.color}</span>}
+                          {v.color && <span className="text-gray-400 mx-1">·</span>}
+                          {v.label}
+                        </span>
+                        {isOOS && <span className="text-[10px] font-normal">(hết)</span>}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Short description */}
           {product.shortDescription && (

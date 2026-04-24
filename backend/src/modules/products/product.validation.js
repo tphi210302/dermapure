@@ -10,6 +10,8 @@ const variantSchema = Joi.object({
   stock:        Joi.number().integer().min(0).required(),
   sku:          Joi.string().allow('').optional(),
   image:        Joi.string().allow('').optional(),
+  color:        Joi.string().max(40).allow('').optional(),
+  colorHex:     Joi.string().pattern(/^#[0-9a-fA-F]{6}$/).allow('').optional(),
 });
 
 const create = Joi.object({

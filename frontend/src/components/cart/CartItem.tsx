@@ -32,8 +32,14 @@ export default function CartItem({ item }: Props) {
           {product.name}
         </Link>
         {variant && (
-          <p className="inline-flex items-center bg-rose-50 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded mt-1">
-            Loại: {variant.label}
+          <p className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 text-[10px] font-bold px-1.5 py-0.5 rounded mt-1">
+            {variant.colorHex && (
+              <span
+                className="inline-block h-3 w-3 rounded-full border border-white ring-1 ring-rose-200 shrink-0"
+                style={{ backgroundColor: variant.colorHex }}
+              />
+            )}
+            Loại: {variant.color ? `${variant.color} · ` : ''}{variant.label}
           </p>
         )}
         {product.brand && <p className="text-xs text-gray-400 mt-0.5">{product.brand}</p>}

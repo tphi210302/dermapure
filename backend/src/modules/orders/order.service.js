@@ -49,7 +49,8 @@ const checkout = async (userId, { shippingAddress, note, voucherCode, affiliateC
       unitPrice = variant.price;
       availableStock = variant.stock;
       variantId = variant._id;
-      variantLabel = variant.label;
+      // Snapshot a human-friendly label — color + label if both present
+      variantLabel = variant.color ? `${variant.color} · ${variant.label}` : variant.label;
     }
 
     if (availableStock < item.quantity) {

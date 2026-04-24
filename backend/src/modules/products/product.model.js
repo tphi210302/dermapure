@@ -102,6 +102,8 @@ const productSchema = new mongoose.Schema(
             stock:        { type: Number, required: true, min: 0, default: 0 },
             sku:          { type: String, trim: true },
             image:        { type: String, trim: true }, // optional variant-specific image
+            color:        { type: String, trim: true, maxlength: 40 }, // vd: "Hồng", "Nude"
+            colorHex:     { type: String, trim: true, match: /^#[0-9a-fA-F]{6}$/ }, // #e11d48
           },
           { _id: true }
         ),

@@ -231,8 +231,10 @@ export default function AdminProductsPage() {
             price:        Number(v.price || 0),
             stock:        Number(v.stock || 0),
             ...(v.comparePrice && { comparePrice: Number(v.comparePrice) }),
-            ...(v.sku   && { sku:   v.sku }),
-            ...(v.image && { image: v.image }),
+            ...(v.sku      && { sku:      v.sku }),
+            ...(v.image    && { image:    v.image }),
+            ...(v.color    && { color:    v.color }),
+            ...(v.colorHex && /^#[0-9a-fA-F]{6}$/.test(v.colorHex) && { colorHex: v.colorHex }),
           })),
       };
       if (editing) {
@@ -585,7 +587,7 @@ export default function AdminProductsPage() {
               <div className="flex items-center justify-between mb-3">
                 <div>
                   <p className="text-sm font-bold text-gray-800">📦 Loại / Biến thể</p>
-                  <p className="text-[11px] text-gray-500">Vd: 30ml / 50ml / 100ml. Bỏ trống nếu sản phẩm chỉ có 1 loại.</p>
+                  <p className="text-[11px] text-gray-500">Vd size: 30ml / 50ml. Vd màu: Hồng / Nude / Đỏ. Có thể kết hợp cả hai.</p>
                 </div>
                 <button type="button" onClick={addVariant}
                   className="text-xs font-bold text-primary-600 hover:text-primary-700">
@@ -654,6 +656,33 @@ export default function AdminProductsPage() {
                             onChange={(e) => updateVariant(i, { sku: e.target.value })}
                           />
                         </div>
+                      </div>
+
+                      {/* Color row — separate so it shows on ALL screens without squeezing other fields */}
+                      <div className="mt-2 pt-2 border-t border-dashed border-gray-200 grid grid-cols-[auto,1fr,auto] gap-2 items-center">
+                        <input
+                          type="color"
+                          className="h-8 w-10 rounded border border-gray-200 cursor-pointer bg-white"
+                          value={v.colorHex && /^#[0-9a-fA-F]{6}$/.test(v.colorHex) ? v.colorHex : '#ffffff'}
+                          onChange={(e) => updateVariant(i, { colorHex: e.target.value })}
+                          title="Chọn màu"
+                        />
+                        <input
+                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                          placeholder="Tên màu (vd: Hồng, Nude, Đỏ đô) — bỏ trống nếu không có màu"
+                          value={v.color || ''}
+                          onChange={(e) => updateVariant(i, { color: e.target.value })}
+                        />
+                        {v.colorHex && (
+                          <button
+                            type="button"
+                            onClick={() => updateVariant(i, { color: '', colorHex: '' })}
+                            className="text-[10px] text-gray-500 hover:text-red-500 underline"
+                            title="Xoá màu"
+                          >
+                            Bỏ màu
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

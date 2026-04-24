@@ -66,6 +66,8 @@ export interface ProductVariant {
   stock: number;
   sku?: string;
   image?: string;
+  color?: string;       // vd: "Hồng", "Nude", "Đỏ đô"
+  colorHex?: string;    // vd: "#FFB6C1" — hex cho swatch
 }
 
 export interface Product {
