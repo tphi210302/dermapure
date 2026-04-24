@@ -496,43 +496,63 @@ export default function AdminProductsPage() {
               ) : (
                 <div className="space-y-2">
                   {variants.map((v, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-center bg-white border border-gray-200 rounded-xl p-2">
-                      <input
-                        className="col-span-3 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
-                        placeholder="Tên (30ml)"
-                        value={v.label || ''}
-                        onChange={(e) => updateVariant(i, { label: e.target.value })}
-                      />
-                      <input
-                        type="number" min={0}
-                        className="col-span-3 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
-                        placeholder="Giá bán"
-                        value={v.price ?? ''}
-                        onChange={(e) => updateVariant(i, { price: Number(e.target.value) })}
-                      />
-                      <input
-                        type="number" min={0}
-                        className="col-span-2 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
-                        placeholder="So sánh"
-                        value={v.comparePrice ?? ''}
-                        onChange={(e) => updateVariant(i, { comparePrice: Number(e.target.value) || undefined })}
-                      />
-                      <input
-                        type="number" min={0}
-                        className="col-span-2 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
-                        placeholder="Tồn"
-                        value={v.stock ?? ''}
-                        onChange={(e) => updateVariant(i, { stock: Number(e.target.value) })}
-                      />
-                      <input
-                        className="col-span-1 px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
-                        placeholder="SKU"
-                        value={v.sku || ''}
-                        onChange={(e) => updateVariant(i, { sku: e.target.value })}
-                      />
+                    <div key={i} className="bg-white border border-gray-200 rounded-xl p-3 relative">
+                      {/* Remove button — top right corner */}
                       <button type="button" onClick={() => removeVariant(i)}
-                        className="col-span-1 text-red-500 hover:text-red-700 text-lg leading-none"
+                        className="absolute top-1.5 right-2 text-red-400 hover:text-red-600 text-xl leading-none"
                         title="Xoá">×</button>
+
+                      {/* Mobile: stacked 2-col grid · Desktop: single row with 5 inline fields */}
+                      <div className="grid grid-cols-2 md:grid-cols-12 gap-2 pr-5 md:pr-0">
+                        <div className="col-span-2 md:col-span-3">
+                          <label className="block text-[10px] font-semibold text-gray-500 mb-0.5 md:hidden">Tên loại</label>
+                          <input
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                            placeholder="Tên (30ml)"
+                            value={v.label || ''}
+                            onChange={(e) => updateVariant(i, { label: e.target.value })}
+                          />
+                        </div>
+                        <div className="md:col-span-3">
+                          <label className="block text-[10px] font-semibold text-gray-500 mb-0.5 md:hidden">Giá bán</label>
+                          <input
+                            type="number" min={0}
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                            placeholder="Giá bán"
+                            value={v.price ?? ''}
+                            onChange={(e) => updateVariant(i, { price: Number(e.target.value) })}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-500 mb-0.5 md:hidden">So sánh</label>
+                          <input
+                            type="number" min={0}
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                            placeholder="So sánh"
+                            value={v.comparePrice ?? ''}
+                            onChange={(e) => updateVariant(i, { comparePrice: Number(e.target.value) || undefined })}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-500 mb-0.5 md:hidden">Tồn kho</label>
+                          <input
+                            type="number" min={0}
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                            placeholder="Tồn"
+                            value={v.stock ?? ''}
+                            onChange={(e) => updateVariant(i, { stock: Number(e.target.value) })}
+                          />
+                        </div>
+                        <div className="col-span-2 md:col-span-2">
+                          <label className="block text-[10px] font-semibold text-gray-500 mb-0.5 md:hidden">SKU</label>
+                          <input
+                            className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400/30"
+                            placeholder="SKU"
+                            value={v.sku || ''}
+                            onChange={(e) => updateVariant(i, { sku: e.target.value })}
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                   <p className="text-[10px] text-gray-400 mt-1">Giá + tồn chính ở trên chỉ dùng khi danh sách này trống.</p>
