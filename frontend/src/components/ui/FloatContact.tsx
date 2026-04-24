@@ -1,16 +1,29 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { cmsService, type SiteSetting } from '@/services/cms.service';
+
 interface Props {
   /** Hide the hotline/phone icon (e.g. on auth pages to reduce clutter). */
   hideHotline?: boolean;
 }
 
 export default function FloatContact({ hideHotline = false }: Props) {
+  const [s, setS] = useState<Partial<SiteSetting>>({});
+  useEffect(() => {
+    cmsService.getSetting().then(({ data }: any) => { if (data?.data) setS(data.data); }).catch(() => {});
+  }, []);
+
+  const zaloHref   = s.zalo     || 'https://zalo.me/pharmashop';
+  const fbHref     = s.facebook || 'https://www.facebook.com/pharmashop';
+  const hotlineRaw = s.hotline  || '1800-123-456';
+  const hotlineTel = hotlineRaw.replace(/\s|-/g, '');
+
   return (
     <div className="flex flex-col items-center gap-2 fixed right-3 bottom-20 md:bottom-28 md:right-4 z-40">
       {/* Zalo */}
       <a
-        href="https://zalo.me/pharmashop"
+        href={zaloHref}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat Zalo"
@@ -28,7 +41,7 @@ export default function FloatContact({ hideHotline = false }: Props) {
 
       {/* Facebook Messenger */}
       <a
-        href="https://www.facebook.com/pharmashop"
+        href={fbHref}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Facebook"
@@ -46,7 +59,7 @@ export default function FloatContact({ hideHotline = false }: Props) {
       {/* Hotline — hidden on auth pages (already shown in auth footer) */}
       {!hideHotline && (
         <a
-          href="tel:1800123456"
+          href={`tel:${hotlineTel}`}
           aria-label="Gọi hotline"
           title="Hotline"
           className="group relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-emerald-500 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200"
@@ -57,7 +70,7 @@ export default function FloatContact({ hideHotline = false }: Props) {
           </svg>
           <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-30 group-hover:opacity-0" />
           <span className="pointer-events-none absolute right-14 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg">
-            1800-123-456
+            {hotlineRaw}
           </span>
         </a>
       )}
