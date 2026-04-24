@@ -25,6 +25,60 @@ const EMPTY_FORM = {
 const marginPct = (sell: number, cost: number) =>
   sell > 0 && cost > 0 ? Math.round(((sell - cost) / sell) * 100) : null;
 
+/**
+ * Image preview tile used in the product form.
+ * - Shows the image via Cloudinary transform
+ * - × button to remove this URL from the list
+ * - Red "Ảnh mờ" overlay when source natural dimensions are < 400px either side
+ * - Red "Ảnh lỗi" overlay when the URL 404s / blocks hotlink
+ */
+const MIN_SHARP_PX = 400;
+const ImagePreviewTile = ({ url, onRemove }: { url: string; onRemove: () => void }) => {
+  const [state, setState] = useState<'loading' | 'ok' | 'blurry' | 'error'>('loading');
+
+  return (
+    <div className="relative h-24 w-24 rounded-lg overflow-hidden border-2 border-gray-200 bg-slate-50 shrink-0 group">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={cloudinaryCard(url)}
+        alt=""
+        className="h-full w-full object-cover"
+        onLoad={(e) => {
+          const img = e.currentTarget;
+          if (img.naturalWidth < MIN_SHARP_PX || img.naturalHeight < MIN_SHARP_PX) {
+            setState('blurry');
+          } else {
+            setState('ok');
+          }
+        }}
+        onError={() => setState('error')}
+      />
+
+      {/* × remove */}
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label="Xoá ảnh"
+        className="absolute top-0.5 right-0.5 h-6 w-6 rounded-full bg-black/70 hover:bg-red-600 text-white flex items-center justify-center text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+      >
+        ×
+      </button>
+
+      {/* Status overlays */}
+      {state === 'blurry' && (
+        <div className="absolute inset-x-0 bottom-0 bg-red-600/90 text-white text-[10px] font-bold text-center py-0.5">
+          ⚠️ Ảnh mờ
+        </div>
+      )}
+      {state === 'error' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-red-50 text-red-600 text-[10px] font-bold">
+          Ảnh lỗi
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProfitBadge = ({ sell, cost }: { sell: number; cost: number }) => {
   if (!cost) return <span className="text-xs text-gray-300">—</span>;
   const p   = sell - cost;
@@ -57,6 +111,29 @@ export default function AdminProductsPage() {
     setVariants((v) => v.map((row, idx) => (idx === i ? { ...row, ...patch } : row)));
   const removeVariant = (i: number) => setVariants((v) => v.filter((_, idx) => idx !== i));
 
+  // ── Draft persistence — only for CREATE, not EDIT ───────────────
+  const DRAFT_KEY = 'admin-product-draft-v1';
+
+  // Auto-save draft whenever form/variants change (while creating)
+  useEffect(() => {
+    if (!modalOpen || editing) return; // only for new-product modal
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ form, variants }));
+    } catch {}
+  }, [form, variants, modalOpen, editing]);
+
+  const loadDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as { form: typeof EMPTY_FORM; variants: Array<Partial<ProductVariant>> };
+    } catch { return null; }
+  };
+
+  const clearDraft = () => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  };
+
   const fetchProducts = useCallback(async (p = page) => {
     setLoading(true);
     try {
@@ -74,7 +151,20 @@ export default function AdminProductsPage() {
     categoryService.getAll().then(({ data }) => setCategories((data as { data: Category[] }).data));
   }, [page]); // eslint-disable-line
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY_FORM); setVariants([]); setModalOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    const draft = loadDraft();
+    // Restore draft silently — toast informs the user there's one to recover
+    if (draft) {
+      setForm(draft.form);
+      setVariants(draft.variants || []);
+      toast.success('Đã khôi phục bản nháp chưa lưu', { duration: 3000 });
+    } else {
+      setForm(EMPTY_FORM);
+      setVariants([]);
+    }
+    setModalOpen(true);
+  };
   const openEdit   = (p: Product) => {
     setEditing(p);
     setVariants(p.variants?.map((v) => ({ ...v })) || []);
@@ -90,7 +180,7 @@ export default function AdminProductsPage() {
       sku:                  p.sku || '',
       brand:                p.brand || '',
       unit:                 p.unit,
-      images:               p.images.join(', '),
+      images:               p.images.join('\n'),
       tags:                 p.tags.join(', '),
       requiresPrescription: p.requiresPrescription,
       isActive:             p.isActive,
@@ -126,7 +216,7 @@ export default function AdminProductsPage() {
         sku:                  form.sku || undefined,
         brand:                form.brand || undefined,
         unit:                 form.unit,
-        images:               form.images ? form.images.split(',').map((s) => s.trim()).filter(Boolean) : [],
+        images:               form.images ? form.images.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean) : [],
         tags:                 form.tags ? form.tags.split(',').map((s) => s.trim()).filter(Boolean) : [],
         requiresPrescription: form.requiresPrescription,
         isActive:             form.isActive,
@@ -151,6 +241,7 @@ export default function AdminProductsPage() {
       } else {
         await productService.create(payload);
         toast.success('Thêm sản phẩm thành công');
+        clearDraft(); // drop the saved draft now that the product is persisted
       }
       setModalOpen(false);
       fetchProducts(page);
@@ -413,24 +504,35 @@ export default function AdminProductsPage() {
             onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))} />
 
           <div className="sm:col-span-2">
-            <Input label="URL ảnh (cách nhau bằng dấu phẩy)" value={form.images}
-              onChange={(e) => setForm((p) => ({ ...p, images: e.target.value }))} />
-            {form.images && (
-              <div className="mt-2">
-                <p className="text-[10px] text-gray-500 mb-1.5">
-                  👁 Xem trước (khung vuông 1:1, đệm trắng, có watermark):
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  {form.images.split(',').map((s) => s.trim()).filter(Boolean).slice(0, 6).map((url, i) => (
-                    <div key={i} className="relative h-24 w-24 rounded-lg overflow-hidden border border-gray-200 bg-slate-50 shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={cloudinaryCard(url)} alt="" className="h-full w-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }} />
-                    </div>
-                  ))}
+            <label className="label">URL ảnh <span className="text-[10px] text-gray-400 font-normal">(mỗi link một dòng)</span></label>
+            <textarea
+              className="input resize-none font-mono text-xs"
+              rows={4}
+              placeholder={'https://example.com/anh1.jpg\nhttps://example.com/anh2.jpg'}
+              value={form.images}
+              onChange={(e) => setForm((p) => ({ ...p, images: e.target.value }))}
+            />
+
+            {form.images && (() => {
+              const urls = form.images.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+              if (urls.length === 0) return null;
+              const removeAt = (idx: number) => {
+                const next = urls.filter((_, i) => i !== idx).join('\n');
+                setForm((p) => ({ ...p, images: next }));
+              };
+              return (
+                <div className="mt-2">
+                  <p className="text-[10px] text-gray-500 mb-1.5">
+                    👁 Xem trước ({urls.length} ảnh) · khung vuông 1:1, watermark, click × để xoá · ảnh mờ sẽ báo đỏ
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    {urls.slice(0, 12).map((url, i) => (
+                      <ImagePreviewTile key={`${i}-${url}`} url={url} onRemove={() => removeAt(i)} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
           <div className="sm:col-span-2">
             <Input label="Tags (cách nhau bằng dấu phẩy)" value={form.tags}
