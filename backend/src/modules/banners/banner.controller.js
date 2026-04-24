@@ -8,6 +8,8 @@ const getAll = asyncHandler(async (req, res) => {
   const { type } = req.query;
   const includeInactive = req.user?.role === 'admin' || req.user?.role === 'staff';
   const items = await service.getAll({ type, includeInactive });
+  // Admin edits banners at runtime — never cache
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   return ApiResponse.ok(res, items);
 });
 

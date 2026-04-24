@@ -6,6 +6,8 @@ const ApiResponse = require('../../utils/ApiResponse');
 
 const get = asyncHandler(async (req, res) => {
   const setting = await service.get();
+  // Admin can update settings at any time — never cache at CDN or browser level
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   return ApiResponse.ok(res, setting);
 });
 
