@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Product } from '@/types';
 import { formatPrice, DISCOUNT_PERCENT } from '@/lib/utils';
@@ -17,19 +18,40 @@ export default function ProductCard({ product }: Props) {
   const [wished, setWished] = useState(false);
 
   const discount   = DISCOUNT_PERCENT(product.price, product.comparePrice);
+  const hasVariants = !!(product.variants && product.variants.length > 0);
+  // When variants exist, "displayed" price = cheapest variant + total stock across variants
+  const displayPrice = hasVariants
+    ? Math.min(...product.variants!.map((v) => v.price))
+    : product.price;
+  const displayComparePrice = hasVariants
+    ? product.variants!.reduce<number | undefined>(
+        (best, v) => (v.comparePrice && (best === undefined || v.comparePrice > best) ? v.comparePrice : best),
+        undefined
+      )
+    : product.comparePrice;
+  const displayStock = hasVariants
+    ? product.variants!.reduce((s, v) => s + v.stock, 0)
+    : product.stock;
+
   const thumbnail  = cloudinaryCard(product.images?.[0] || 'https://placehold.co/400x400/f0f9ff/0369a1?text=No+Image');
-  const isOutOfStock = product.stock === 0;
-  const isLowStock   = product.stock > 0 && product.stock <= 5;
+  const isOutOfStock = displayStock === 0;
+  const isLowStock   = displayStock > 0 && displayStock <= 5;
   const categoryName = typeof product.category === 'object' ? product.category.name : '';
+  const href = `/products/${product._id}`;
+
+  const router = useRouter();
 
   const handleAddToCart = async () => {
     if (isOutOfStock || adding) return;
+    // Products with variants require a choice — send user to detail page
+    if (hasVariants) {
+      router.push(href);
+      return;
+    }
     setAdding(true);
     await addToCart(product._id, 1);
     setTimeout(() => setAdding(false), 800);
   };
-
-  const href = `/products/${product._id}`;
 
   return (
     <div className={cn(
@@ -119,7 +141,12 @@ export default function ProductCard({ product }: Props) {
         <div className="mt-1.5">
           {isLowStock && (
             <p className="text-[11px] text-amber-600 font-medium">
-              ⚠️ Chỉ còn {product.stock} sản phẩm
+              ⚠️ Chỉ còn {displayStock} sản phẩm
+            </p>
+          )}
+          {hasVariants && (
+            <p className="text-[11px] text-primary-600 font-medium">
+              📦 {product.variants!.length} loại · từ {formatPrice(displayPrice)}
             </p>
           )}
         </div>
@@ -129,11 +156,12 @@ export default function ProductCard({ product }: Props) {
           <div className="flex items-center justify-between gap-2 mb-3">
             <div>
               <p className="text-lg font-extrabold text-rose-600">
-                {formatPrice(product.price)}
+                {hasVariants && <span className="text-xs font-semibold text-gray-500">Từ </span>}
+                {formatPrice(displayPrice)}
               </p>
-              {product.comparePrice && product.comparePrice > product.price && (
+              {displayComparePrice && displayComparePrice > displayPrice && (
                 <p className="text-xs text-gray-400 line-through leading-none mt-0.5">
-                  {formatPrice(product.comparePrice)}
+                  {formatPrice(displayComparePrice)}
                 </p>
               )}
             </div>
@@ -166,6 +194,13 @@ export default function ProductCard({ product }: Props) {
               </>
             ) : isOutOfStock ? (
               'Hết hàng'
+            ) : hasVariants ? (
+              <>
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                </svg>
+                Chọn loại
+              </>
             ) : (
               <>
                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
