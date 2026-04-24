@@ -4,6 +4,8 @@ const router = require('express').Router();
 const ctrl = require('./bundle.controller');
 const { protect } = require('../../middleware/auth.middleware');
 const { authorize } = require('../../middleware/role.middleware');
+const { validate } = require('../../middleware/validate.middleware');
+const schema = require('./bundle.validation');
 
 /**
  * @swagger
@@ -19,8 +21,8 @@ router.get('/slug/:slug',     ctrl.getBySlug);
 router.get('/:id',            ctrl.getById);
 
 // Admin
-router.post('/',        protect, authorize('admin', 'staff'), ctrl.create);
-router.patch('/:id',    protect, authorize('admin', 'staff'), ctrl.update);
+router.post('/',        protect, authorize('admin', 'staff'), validate(schema.create), ctrl.create);
+router.patch('/:id',    protect, authorize('admin', 'staff'), validate(schema.update), ctrl.update);
 router.delete('/:id',   protect, authorize('admin', 'staff'), ctrl.remove);
 
 module.exports = router;

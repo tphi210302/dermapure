@@ -5,14 +5,14 @@ const Joi = require('joi');
 const create = Joi.object({
   name:        Joi.string().max(100).required(),
   description: Joi.string().max(500).optional(),
-  image:       Joi.string().uri().optional(),
+  image:       Joi.string().uri({ allowRelative: true }).allow('').optional(),
   isActive:    Joi.boolean().optional(),
 });
 
 const update = Joi.object({
   name:        Joi.string().max(100).optional(),
   description: Joi.string().max(500).optional(),
-  image:       Joi.string().uri().optional(),
+  image:       Joi.string().uri({ allowRelative: true }).allow('').optional(),
   isActive:    Joi.boolean().optional(),
 });
 
