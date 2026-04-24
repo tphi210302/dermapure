@@ -44,14 +44,16 @@ export const cloudinaryUrl = (url: string, opts: Opts = {}): string => {
   const crop = opts.crop ?? 'pad';
   const bg = opts.bg ?? 'ffffff';
 
+  // dpr_2 (not dpr_auto) — Cloudinary's auto only works with their SDKs that send
+  // the client hint header; explicit 2x gives crisp retina on phones + MacBook.
   const transforms = [
     `w_${w}`,
     `h_${h}`,
     `c_${crop}`,
     ...(crop === 'pad' ? [`b_rgb:${bg}`] : []),
-    'q_auto',
+    'q_auto:good',
     'f_auto',
-    'dpr_auto',
+    'dpr_2.0',
   ].join(',');
 
   // Watermark layer: Cloudinary text overlay "DermaPure" in rose with shadow.
@@ -68,13 +70,13 @@ export const cloudinaryUrl = (url: string, opts: Opts = {}): string => {
 };
 
 /** Shortcut: small thumbnail (no watermark). */
-export const cloudinaryThumb = (url: string, size = 120) =>
+export const cloudinaryThumb = (url: string, size = 160) =>
   cloudinaryUrl(url, { w: size, h: size, crop: 'fill', watermark: false });
 
 /** Shortcut: medium card (with watermark). */
 export const cloudinaryCard = (url: string) =>
-  cloudinaryUrl(url, { w: 600, h: 600 });
+  cloudinaryUrl(url, { w: 700, h: 700, wmSize: 30 });
 
 /** Shortcut: full-size hero (with large watermark). */
 export const cloudinaryHero = (url: string) =>
-  cloudinaryUrl(url, { w: 1000, h: 1000, wmSize: 36 });
+  cloudinaryUrl(url, { w: 1200, h: 1200, wmSize: 42 });

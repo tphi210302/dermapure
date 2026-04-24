@@ -59,6 +59,17 @@ export default function ProductDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Keyboard arrow keys navigate the gallery
+  useEffect(() => {
+    if (!product || product.images.length <= 1) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft')  setActiveImg((i) => (i - 1 + product.images.length) % product.images.length);
+      if (e.key === 'ArrowRight') setActiveImg((i) => (i + 1) % product.images.length);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [product?.images?.length]);  // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch related products from the same category (excluding current)
   useEffect(() => {
     if (!product) { setRelated([]); return; }
@@ -152,6 +163,54 @@ export default function ProductDetailPage() {
               priority
               sizes="(max-width: 768px) 100vw, 50vw"
             />
+
+            {/* Prev/Next arrows — only when multiple images */}
+            {product.images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setActiveImg((i) => (i - 1 + product.images.length) % product.images.length)}
+                  aria-label="Ảnh trước"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:scale-105 transition-all"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveImg((i) => (i + 1) % product.images.length)}
+                  aria-label="Ảnh tiếp"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:scale-105 transition-all"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7"/>
+                  </svg>
+                </button>
+
+                {/* Counter pill */}
+                <span className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[11px] font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
+                  {activeImg + 1} / {product.images.length}
+                </span>
+
+                {/* Dot indicators */}
+                <div className="absolute bottom-3 right-3 flex gap-1">
+                  {product.images.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setActiveImg(i)}
+                      aria-label={`Ảnh ${i + 1}`}
+                      className={cn(
+                        'h-2 rounded-full transition-all',
+                        i === activeImg ? 'w-5 bg-white' : 'w-2 bg-white/50 hover:bg-white/70'
+                      )}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
             {discount > 0 && (
               <span className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-xl shadow">
                 -{discount}%
