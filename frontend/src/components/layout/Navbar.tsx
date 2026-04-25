@@ -31,6 +31,7 @@ export default function Navbar() {
   const [searching,    setSearching]    = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const searchRef   = useRef<HTMLDivElement>(null);
+  const searchRefMobile = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -43,8 +44,10 @@ export default function Navbar() {
     const handler = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node))
         setUserMenuOpen(false);
-      if (searchRef.current && !searchRef.current.contains(e.target as Node))
-        setShowSuggest(false);
+      // Close suggestions only when click is outside BOTH search containers
+      const inDesktop = searchRef.current && searchRef.current.contains(e.target as Node);
+      const inMobile  = searchRefMobile.current && searchRefMobile.current.contains(e.target as Node);
+      if (!inDesktop && !inMobile) setShowSuggest(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -393,8 +396,8 @@ export default function Navbar() {
         </div>
 
         {/* ── Mobile search ────────────────────────────────── */}
-        <div className="sm:hidden pb-3">
-          <form onSubmit={handleSearch}>
+        <div className="sm:hidden pb-3" ref={searchRefMobile}>
+          <form onSubmit={handleSearch} className="relative">
             <div className="flex items-center gap-2 bg-gray-50 border border-gray-200
                             rounded-full px-4 py-2.5 focus-within:bg-white
                             focus-within:border-primary-400 focus-within:ring-2
@@ -405,15 +408,69 @@ export default function Navbar() {
               </svg>
               <input type="search" value={searchQuery}
                 onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={() => suggestions.length > 0 && setShowSuggest(true)}
                 placeholder="Tìm serum, kem chống nắng…"
                 className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400
                            focus:outline-none" />
+              {searching && (
+                <svg className="h-4 w-4 text-gray-400 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              )}
               <button type="submit"
                 className="shrink-0 bg-primary-600 hover:bg-primary-700 text-white
                            text-xs font-bold px-3 py-1.5 rounded-full transition-colors">
                 Tìm
               </button>
             </div>
+
+            {/* Mobile suggestions dropdown */}
+            {showSuggest && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl
+                              shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-gray-100
+                              overflow-hidden z-50 max-h-[60dvh] overflow-y-auto">
+                <div className="px-4 py-2 border-b border-gray-50 bg-gray-50/50 sticky top-0">
+                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                    Gợi ý tìm kiếm
+                  </p>
+                </div>
+                <ul>
+                  {suggestions.map((p) => (
+                    <li key={p._id}>
+                      <button type="button" onClick={() => handleSuggestionClick(p)}
+                        className="w-full flex items-center gap-3 px-3 py-2 active:bg-primary-50 text-left">
+                        <div className="h-10 w-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                          {p.images?.[0]
+                            // eslint-disable-next-line @next/next/no-img-element
+                            ? <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" />
+                            : <div className="h-full w-full flex items-center justify-center text-lg">💊</div>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900 truncate">{p.name}</p>
+                          <p className="text-[10px] text-gray-400 truncate">
+                            {typeof p.category === 'object' ? p.category.name : ''}
+                          </p>
+                        </div>
+                        <span className="text-xs font-bold text-primary-600 shrink-0">
+                          {formatPrice(p.price)}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="border-t border-gray-100 bg-gray-50/30">
+                  <button type="submit"
+                    className="w-full px-4 py-2.5 text-xs font-semibold text-primary-600 active:bg-primary-50 text-center flex items-center justify-center gap-1.5">
+                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Xem tất cả kết quả cho &ldquo;{searchQuery}&rdquo;
+                  </button>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>
