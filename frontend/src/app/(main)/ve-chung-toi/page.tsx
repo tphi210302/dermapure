@@ -5,7 +5,7 @@ import AboutCtaButtons from './AboutCtaButtons';
 export const metadata: Metadata = { title: 'Về chúng tôi' };
 
 const MILESTONES = [
-  { year: '2018', title: 'Thành lập', desc: 'DermaPure ra đời với sứ mệnh mang dược mỹ phẩm chính hãng đến tay người Việt.' },
+  { year: '2018', title: 'Thành lập', desc: 'Lumié ra đời với sứ mệnh mang dược mỹ phẩm chính hãng đến tay người Việt.' },
   { year: '2020', title: 'Mở rộng', desc: 'Đạt 10.000 khách hàng, ra mắt dịch vụ tư vấn dược sĩ da liễu trực tuyến.' },
   { year: '2022', title: 'Chứng nhận', desc: 'Đạt chứng nhận GPP và hợp tác phân phối với các thương hiệu dược mỹ phẩm hàng đầu.' },
   { year: '2026', title: 'Hôm nay', desc: 'Hơn 50.000 khách hàng tin tưởng, liệu trình cá nhân hoá, giao hàng toàn quốc.' },
@@ -32,14 +32,14 @@ export default function AboutPage() {
       <div className="bg-gradient-to-br from-primary-700 to-blue-800 text-white py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <span className="inline-flex items-center gap-2 bg-white/15 border border-white/25 text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
-            ✨ Về DermaPure
+            ✨ Về Lumié
           </span>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-5 leading-tight">
             Làn da khoẻ đẹp,<br />
             <span className="text-blue-200">trách nhiệm của chúng tôi</span>
           </h1>
           <p className="text-white/75 text-lg leading-relaxed max-w-xl mx-auto">
-            Từ năm 2018, DermaPure đã là người bạn đồng hành đáng tin cậy trong hành trình chăm sóc làn da của hàng chục nghìn khách hàng Việt Nam.
+            Từ năm 2018, Lumié đã là người bạn đồng hành đáng tin cậy trong hành trình chăm sóc làn da của hàng chục nghìn khách hàng Việt Nam.
           </p>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function AboutPage() {
                 Mang dược mỹ phẩm chuẩn đến mọi làn da
               </h2>
               <p className="text-gray-600 leading-relaxed mb-4">
-                DermaPure ra đời với một mục tiêu duy nhất: giúp người Việt dễ dàng tiếp cận dược mỹ phẩm chính hãng, được dược sĩ da liễu tư vấn cá nhân hoá, với giá minh bạch.
+                Lumié ra đời với một mục tiêu duy nhất: giúp người Việt dễ dàng tiếp cận dược mỹ phẩm chính hãng, được dược sĩ da liễu tư vấn cá nhân hoá, với giá minh bạch.
               </p>
               <p className="text-gray-600 leading-relaxed">
                 Chúng tôi hợp tác trực tiếp với các thương hiệu dược mỹ phẩm hàng đầu, loại bỏ trung gian, đảm bảo mỗi sản phẩm bạn nhận được là hàng thật — giá tốt nhất thị trường.
@@ -148,7 +148,7 @@ export default function AboutPage() {
         {/* CTA */}
         <section className="bg-gradient-to-br from-primary-600 to-blue-700 rounded-3xl p-8 text-white text-center">
           <h2 className="text-xl font-extrabold mb-2">Sẵn sàng chăm sóc sức khoẻ cùng chúng tôi?</h2>
-          <p className="text-white/75 text-sm mb-6">Tham gia cùng 50.000+ khách hàng đang tin tưởng DermaPure.</p>
+          <p className="text-white/75 text-sm mb-6">Tham gia cùng 50.000+ khách hàng đang tin tưởng Lumié.</p>
           <AboutCtaButtons />
         </section>
       </div>

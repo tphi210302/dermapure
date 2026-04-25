@@ -7,11 +7,11 @@ import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: {
-    default: 'DermaPure — Dược Mỹ Phẩm Chính Hãng',
-    template: '%s | DermaPure',
+    default: 'Lumié — Mỹ Phẩm Chính Hãng',
+    template: '%s | Lumié',
   },
-  description: 'Nền tảng dược mỹ phẩm chuyên khoa da liễu: trị mụn, mờ thâm, chống nắng. Sản phẩm chính hãng, tư vấn bởi dược sĩ da liễu.',
-  applicationName: 'DermaPure',
+  description: 'Lumié — Mỹ phẩm chính hãng cho phụ nữ Việt. Tỏa sáng vẻ đẹp tự nhiên với serum, kem dưỡng, son môi và combo skincare cao cấp.',
+  applicationName: 'Lumié',
   manifest: '/site.webmanifest',
 };
 

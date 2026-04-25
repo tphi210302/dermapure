@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import api from '@/lib/axios';
 import { Product } from '@/types';
 import { formatPrice } from '@/lib/utils';
+import Logo from '@/components/branding/Logo';
 
 const NAV_LINKS = [
   { href: '/products',            label: 'Tất cả sản phẩm' },
@@ -105,28 +106,11 @@ export default function Navbar() {
         <div className="flex h-[68px] items-center gap-3 lg:gap-5">
 
           {/* ── Logo ────────────────────────────────────────── */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-            {/* Icon */}
-            <div className="relative h-9 w-9 shrink-0">
-              <div className="absolute inset-0 rounded-[10px] gradient-brand shadow-md
-                              group-hover:shadow-primary-500/40 group-hover:scale-105
-                              transition-all duration-200" />
-              <div className="relative h-full w-full flex items-center justify-center">
-                <svg className="h-[18px] w-[18px] text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-3
-                           10h-3v3a1 1 0 01-2 0v-3H8a1 1 0 010-2h3V8a1 1 0 012 0v3h3a1 1 0 010 2z"/>
-                </svg>
-              </div>
-            </div>
-            {/* Text */}
-            <div className="leading-none">
-              <p className="font-black text-[17px] text-gray-900 tracking-tight">
-                Derma<span className="text-primary-600">Pure</span>
-              </p>
-              <p className="hidden sm:block text-[10px] text-gray-400 font-medium tracking-wide mt-0.5">
-                Dược mỹ phẩm da liễu
-              </p>
-            </div>
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 group transition-transform duration-200 group-hover:scale-105">
+            <Logo size="sm" />
+            <p className="hidden md:block text-[10px] text-gray-400 font-medium tracking-wide self-end pb-1">
+              Mỹ phẩm chính hãng
+            </p>
           </Link>
 
           {/* ── Desktop nav links ────────────────────────────── */}

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import Logo from '@/components/branding/Logo';
 
 const DashIcon = () => (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,13 +108,9 @@ export default function AdminSidebar({ open = false, onClose }: Props) {
       )}>
         {/* Logo + close button (mobile) */}
         <div className="px-5 py-5 border-b border-gray-800 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2" onClick={onClose}>
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-rose-600 to-pink-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              ✚
-            </div>
-            <span className="font-extrabold text-white text-[15px]">
-              Derma<span className="text-primary-400">Admin</span>
-            </span>
+          <Link href="/" className="flex items-center gap-2.5" onClick={onClose}>
+            <Logo size="sm" theme="dark" />
+            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Admin</span>
           </Link>
           {onClose && (
             <button onClick={onClose} className="lg:hidden p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-gray-800">

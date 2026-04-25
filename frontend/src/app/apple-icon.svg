@@ -1,13 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"  stop-color="#e11d48"/>
-      <stop offset="50%" stop-color="#f43f5e"/>
-      <stop offset="100%" stop-color="#fb7185"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#fff1f2"/>
+      <stop offset="100%" stop-color="#fde8ee"/>
+    </linearGradient>
+    <linearGradient id="petalA" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#fda4af"/>
+      <stop offset="60%"  stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <linearGradient id="petalB" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fb923c"/>
     </linearGradient>
   </defs>
-  <rect x="0" y="0" width="180" height="180" rx="40" ry="40" fill="url(#g)"/>
-  <path d="M78 38 H102 V78 H142 V102 H102 V142 H78 V102 H38 V78 H78 Z"
-        fill="#ffffff"/>
+
+  <rect x="0" y="0" width="180" height="180" rx="40" ry="40" fill="url(#bg)"/>
+
+  <g transform="translate(90 95)">
+    <path d="M 0 -62 C -45 -50, -62 -6, -28 34 C -11 45, 0 34, 0 17 Z"
+          fill="url(#petalA)" opacity="0.92"/>
+    <path d="M 0 -62 C 45 -50, 62 -6, 28 34 C 11 45, 0 34, 0 17 Z"
+          fill="url(#petalA)" opacity="0.92"/>
+    <path d="M 0 -50 C -20 -22, -14 17, 0 34 C 14 17, 20 -22, 0 -50 Z"
+          fill="url(#petalB)" opacity="0.95"/>
+    <ellipse cx="-6" cy="-28" rx="4.5" ry="6.5" fill="#ffffff" opacity="0.75"/>
+  </g>
 </svg>

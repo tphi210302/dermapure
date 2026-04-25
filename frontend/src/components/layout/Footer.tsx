@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { cmsService, type SiteSetting } from '@/services/cms.service';
+import Logo from '@/components/branding/Logo';
 
 const LINKS = {
   'Mua sắm': [
@@ -26,8 +27,8 @@ const LINKS = {
 
 // Sensible defaults in case the settings fetch fails (offline, cold start, etc.)
 const FALLBACK: Partial<SiteSetting> = {
-  siteName:  'DermaPure',
-  tagline:   'Nền tảng dược mỹ phẩm chuyên khoa da liễu: trị mụn, mờ thâm, chống nắng. Sản phẩm chính hãng, tư vấn bởi dược sĩ da liễu.',
+  siteName:  'Lumié',
+  tagline:   'Mỹ phẩm chính hãng, lựa chọn của hàng nghìn khách hàng Việt — thắp sáng vẻ đẹp tự nhiên của bạn.',
   hotline:   '1800-123-456',
   email:     'support@dermapure.vn',
   address:   'Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội',
@@ -73,15 +74,8 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8">
           {/* Brand column */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2 mb-3 group">
-              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl gradient-brand flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md">
-                ✚
-              </div>
-              <span className="font-extrabold text-base sm:text-lg text-white">
-                {(s.siteName || 'DermaPure').split('').slice(0, 5).join('') === 'Derma' && (s.siteName || 'DermaPure').slice(5) ? (
-                  <>Derma<span className="text-primary-400">{(s.siteName || 'DermaPure').slice(5)}</span></>
-                ) : (s.siteName || 'DermaPure')}
-              </span>
+            <Link href="/" className="inline-flex mb-3 group">
+              <Logo size="sm" theme="dark" />
             </Link>
             <p className="text-xs sm:text-sm text-gray-400 leading-relaxed mb-4">
               {s.tagline}
@@ -186,7 +180,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 mt-6 sm:mt-10 pt-4 sm:pt-6 text-center">
           <p className="text-[10px] sm:text-xs text-gray-500">
-            © {new Date().getFullYear()} {s.siteName || 'DermaPure'}. Tất cả quyền được bảo lưu.
+            © {new Date().getFullYear()} {s.siteName || 'Lumié'}. Tất cả quyền được bảo lưu.
           </p>
         </div>
       </div>

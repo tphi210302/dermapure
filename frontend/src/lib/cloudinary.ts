@@ -5,7 +5,7 @@
  * Cloudinary fetch URL that:
  *   - normalises the image to a square canvas (default 800×800) with white padding
  *   - auto-picks format (WebP/AVIF) + auto quality
- *   - overlays the "DermaPure" text watermark in the bottom-right corner
+ *   - overlays the "Lumié" text watermark in the bottom-right corner
  *
  * When NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is unset, returns the original URL
  * (graceful fallback so local dev + unconfigured deploys still show images).
@@ -20,7 +20,7 @@ type Opts = {
   crop?: 'pad' | 'fill' | 'fit';
   /** Background color when crop=pad. Hex without #. Default `ffffff`. */
   bg?: string;
-  /** Show DermaPure text watermark. Default true. */
+  /** Show Lumié text watermark. Default true. */
   watermark?: boolean;
   /** Watermark font size. Default 28 for 800px output. */
   wmSize?: number;
@@ -56,12 +56,13 @@ export const cloudinaryUrl = (url: string, opts: Opts = {}): string => {
     'dpr_2.0',
   ].join(',');
 
-  // Watermark layer: Cloudinary text overlay "DermaPure" in rose with shadow.
-  // Skip for tiny thumbnails where text would be unreadable.
+  // Watermark: italic-looking text "Lumié" in elegant rose, with white outline.
+  // Cloudinary doesn't ship Playfair, but Times New Roman renders the é nicely.
+  // Skipped for tiny thumbnails where text becomes unreadable.
   const wm =
     opts.watermark === false || w < 200
       ? ''
-      : `/l_text:Arial_${opts.wmSize ?? 28}_bold:DermaPure,co_rgb:e11d48,bo_1px_solid_white,g_south_east,x_16,y_12,o_85`;
+      : `/l_text:Times%20New%20Roman_${opts.wmSize ?? 28}_bold_italic:Lumi%C3%A9,co_rgb:e11d48,bo_2px_solid_white,g_south_east,x_18,y_14,o_90`;
 
   // Cloudinary is picky about URL encoding for fetched URLs.
   const encoded = encodeURIComponent(url);

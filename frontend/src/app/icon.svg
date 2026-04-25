@@ -1,13 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"  stop-color="#e11d48"/>
-      <stop offset="50%" stop-color="#f43f5e"/>
-      <stop offset="100%" stop-color="#fb7185"/>
+    <!-- Outer ring soft blush -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#fff1f2"/>
+      <stop offset="100%" stop-color="#fde8ee"/>
+    </linearGradient>
+    <!-- Petal — rose to coral -->
+    <linearGradient id="petalA" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#fda4af"/>
+      <stop offset="60%"  stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#e11d48"/>
+    </linearGradient>
+    <!-- Inner petal — peach gold -->
+    <linearGradient id="petalB" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fb923c"/>
     </linearGradient>
   </defs>
-  <rect x="0" y="0" width="64" height="64" rx="14" ry="14" fill="url(#g)"/>
-  <path d="M28 14 H36 V28 H50 V36 H36 V50 H28 V36 H14 V28 H28 Z"
-        fill="#ffffff"/>
+
+  <!-- Rounded square backdrop -->
+  <rect x="0" y="0" width="64" height="64" rx="14" ry="14" fill="url(#bg)"/>
+
+  <g transform="translate(32 33)">
+    <!-- Left curved petal -->
+    <path d="M 0 -22 C -16 -18, -22 -2, -10 12 C -4 16, 0 12, 0 6 Z"
+          fill="url(#petalA)" opacity="0.92"/>
+    <!-- Right curved petal -->
+    <path d="M 0 -22 C 16 -18, 22 -2, 10 12 C 4 16, 0 12, 0 6 Z"
+          fill="url(#petalA)" opacity="0.92"/>
+    <!-- Center inner petal -->
+    <path d="M 0 -18 C -7 -8, -5 6, 0 12 C 5 6, 7 -8, 0 -18 Z"
+          fill="url(#petalB)" opacity="0.95"/>
+    <!-- Tiny dewdrop highlight -->
+    <ellipse cx="-2" cy="-10" rx="1.6" ry="2.4" fill="#ffffff" opacity="0.7"/>
+  </g>
 </svg>

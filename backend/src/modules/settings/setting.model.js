@@ -13,13 +13,13 @@ const settingSchema = new mongoose.Schema(
     key: { type: String, default: 'main', unique: true },
 
     // Branding
-    siteName:  { type: String, default: 'DermaPure', maxlength: 80 },
-    tagline:   { type: String, default: 'Dược mỹ phẩm chính hãng', maxlength: 200 },
+    siteName:  { type: String, default: 'Lumié', maxlength: 80 },
+    tagline:   { type: String, default: 'Mỹ phẩm chính hãng — Tỏa sáng vẻ đẹp tự nhiên', maxlength: 200 },
     logoUrl:   { type: String, trim: true },
 
     // Contact
     hotline:   { type: String, default: '1800-123-456', maxlength: 30 },
-    email:     { type: String, default: 'support@dermapure.vn', maxlength: 80 },
+    email:     { type: String, default: 'support@lumie.vn', maxlength: 80 },
     address:   { type: String, default: 'Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội', maxlength: 300 },
     facebook:  { type: String, trim: true },
     zalo:      { type: String, trim: true },
