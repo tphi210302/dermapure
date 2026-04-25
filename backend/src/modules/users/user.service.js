@@ -231,7 +231,89 @@ const getAffiliateLeaderboard = async () => {
   return Order.aggregate(pipeline);
 };
 
+// ── Address book ─────────────────────────────────────────────────
+const PHONE_RE = /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/;
+
+const _normalizeAddress = (a = {}) => {
+  if (!a.recipientName) throw ApiError.badRequest('Vui lòng nhập tên người nhận');
+  if (!a.phone || !PHONE_RE.test(a.phone.trim())) throw ApiError.badRequest('Số điện thoại không hợp lệ');
+  if (!a.street || !a.street.trim()) throw ApiError.badRequest('Vui lòng nhập số nhà / tên đường');
+  if (!a.ward || !a.ward.trim())     throw ApiError.badRequest('Vui lòng chọn Phường/Xã');
+  if (!a.state || !a.state.trim())   throw ApiError.badRequest('Vui lòng chọn Tỉnh/Thành phố');
+  return {
+    label:         (a.label || 'Nhà').trim(),
+    recipientName: a.recipientName.trim(),
+    phone:         a.phone.trim(),
+    street:        a.street.trim(),
+    ward:          a.ward.trim(),
+    city:          a.city ? a.city.trim() : '',
+    state:         a.state.trim(),
+    country:       a.country?.trim() || 'Vietnam',
+    isDefault:     !!a.isDefault,
+  };
+};
+
+const _setDefault = (user, newDefaultId) => {
+  user.addresses.forEach((a) => {
+    a.isDefault = newDefaultId ? a._id.toString() === newDefaultId.toString() : false;
+  });
+};
+
+const listMyAddresses = async (userId) => {
+  const user = await User.findById(userId).select('addresses');
+  return user?.addresses || [];
+};
+
+const addMyAddress = async (userId, data) => {
+  const clean = _normalizeAddress(data);
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound('User not found');
+  // First address auto-default; otherwise honor isDefault flag
+  if (user.addresses.length === 0) clean.isDefault = true;
+  if (clean.isDefault) _setDefault(user, null); // clear other defaults first
+  user.addresses.push(clean);
+  if (clean.isDefault) _setDefault(user, user.addresses[user.addresses.length - 1]._id);
+  await user.save();
+  return user.addresses;
+};
+
+const updateMyAddress = async (userId, addrId, data) => {
+  const clean = _normalizeAddress(data);
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound('User not found');
+  const addr = user.addresses.id(addrId);
+  if (!addr) throw ApiError.notFound('Address not found');
+  Object.assign(addr, clean);
+  if (clean.isDefault) _setDefault(user, addrId);
+  await user.save();
+  return user.addresses;
+};
+
+const deleteMyAddress = async (userId, addrId) => {
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound('User not found');
+  const addr = user.addresses.id(addrId);
+  if (!addr) throw ApiError.notFound('Address not found');
+  const wasDefault = addr.isDefault;
+  user.addresses.pull(addrId);
+  // If we removed the default, promote the first remaining one
+  if (wasDefault && user.addresses.length > 0) user.addresses[0].isDefault = true;
+  await user.save();
+  return user.addresses;
+};
+
+const setMyDefaultAddress = async (userId, addrId) => {
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound('User not found');
+  const addr = user.addresses.id(addrId);
+  if (!addr) throw ApiError.notFound('Address not found');
+  _setDefault(user, addrId);
+  await user.save();
+  return user.addresses;
+};
+
 module.exports = {
   createUser, getAllUsers, getUserById, updateUser, deleteUser,
   updateProfile, getMyAffiliateStats, getAffiliateLeaderboard,
+  listMyAddresses, addMyAddress, updateMyAddress, deleteMyAddress, setMyDefaultAddress,
 };

@@ -3,15 +3,35 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+// Legacy single-address subdocument (kept for backward compatibility on existing user docs)
 const addressSchema = new mongoose.Schema(
   {
-    street: { type: String, trim: true },   // Số nhà, tên đường
-    ward:   { type: String, trim: true },   // Phường / Xã
-    city:   { type: String, trim: true },   // Quận / Huyện
-    state:  { type: String, trim: true },   // Tỉnh / Thành phố
+    street: { type: String, trim: true },
+    ward:   { type: String, trim: true },
+    city:   { type: String, trim: true },
+    state:  { type: String, trim: true },
     country: { type: String, trim: true, default: 'Vietnam' },
   },
   { _id: false }
+);
+
+// New multi-address book subdocument — what new code uses
+const addressBookSchema = new mongoose.Schema(
+  {
+    label:         { type: String, trim: true, default: 'Nhà', maxlength: 40 },  // Nhà, Cơ quan, ...
+    recipientName: { type: String, trim: true, required: true, maxlength: 80 },
+    phone:         {
+      type: String, trim: true, required: true,
+      match: [/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'Số điện thoại không hợp lệ'],
+    },
+    street:        { type: String, trim: true, required: true, maxlength: 200 },
+    ward:          { type: String, trim: true, required: true, maxlength: 100 },
+    city:          { type: String, trim: true, maxlength: 100 },
+    state:         { type: String, trim: true, required: true, maxlength: 100 },
+    country:       { type: String, trim: true, default: 'Vietnam' },
+    isDefault:     { type: Boolean, default: false },
+  },
+  { _id: true, timestamps: true }
 );
 
 const userSchema = new mongoose.Schema(
@@ -51,6 +71,8 @@ const userSchema = new mongoose.Schema(
       match: [/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'Số điện thoại không hợp lệ (vd: 0912345678)'],
     },
     address: addressSchema,
+    // Address book — multiple saved addresses, one default
+    addresses: { type: [addressBookSchema], default: [] },
     isActive: {
       type: Boolean,
       default: true,

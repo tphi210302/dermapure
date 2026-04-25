@@ -12,6 +12,21 @@ export interface User {
   updatedAt: string;
 }
 
+export interface SavedAddress {
+  _id: string;
+  label: string;          // Nhà / Cơ quan / Khác
+  recipientName: string;
+  phone: string;
+  street: string;
+  ward: string;
+  city?: string;
+  state: string;
+  country: string;
+  isDefault: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Address {
   recipientName?: string;  // Tên người nhận (checkout only)
   phone?: string;          // SĐT người nhận (checkout only)

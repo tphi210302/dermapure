@@ -17,6 +17,13 @@ const schema = require('./user.validation');
 // ── Customer ──────────────────────────────────────────────
 router.patch('/me', protect, validate(schema.updateProfile), ctrl.updateProfile);
 
+// ── Address book ──────────────────────────────────────────
+router.get   ('/me/addresses',                  protect, ctrl.listMyAddresses);
+router.post  ('/me/addresses',                  protect, ctrl.addMyAddress);
+router.patch ('/me/addresses/:addrId',          protect, ctrl.updateMyAddress);
+router.delete('/me/addresses/:addrId',          protect, ctrl.deleteMyAddress);
+router.patch ('/me/addresses/:addrId/default',  protect, ctrl.setMyDefaultAddress);
+
 // ── Staff/Admin: affiliate ────────────────────────────────
 router.get('/me/affiliate', protect, authorize('sales', 'staff', 'admin'), ctrl.getMyAffiliate);
 router.get('/affiliate/leaderboard', protect, authorize('admin'), ctrl.getAffiliateLeaderboard);

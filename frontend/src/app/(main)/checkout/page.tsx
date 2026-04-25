@@ -13,6 +13,8 @@ import VietnamAddressPicker from '@/components/address/VietnamAddressPicker';
 import StreetAutocomplete from '@/components/address/StreetAutocomplete';
 import { readAffiliateRef, clearAffiliateRef } from '@/components/affiliate/AffiliateCapture';
 import { cloudinaryThumb } from '@/lib/cloudinary';
+import { addressService } from '@/services/address.service';
+import type { SavedAddress } from '@/types';
 import toast from 'react-hot-toast';
 
 const SHIPPING_FEE      = 30000;
@@ -43,6 +45,78 @@ export default function CheckoutPage() {
     country:       'Vietnam',
     note:          '',
   });
+
+  // Address book — saved addresses on user account
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddrId, setSelectedAddrId] = useState<string | null>(null);
+  const [editMode,       setEditMode]       = useState(false); // when true, shows form fields
+
+  useEffect(() => {
+    addressService.list()
+      .then((res) => {
+        const list = (res.data as any).data as SavedAddress[];
+        setSavedAddresses(list);
+        if (list.length > 0) {
+          const def = list.find((a) => a.isDefault) || list[0];
+          fillFormFromAddress(def);
+          setSelectedAddrId(def._id);
+          setEditMode(false);
+        } else {
+          setEditMode(true); // no saved → show form
+        }
+      })
+      .catch(() => setEditMode(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fillFormFromAddress = (a: SavedAddress) => {
+    setForm((p) => ({
+      ...p,
+      recipientName: a.recipientName,
+      phone:         a.phone,
+      street:        a.street,
+      ward:          a.ward,
+      city:          a.city || '',
+      state:         a.state,
+      country:       a.country || 'Vietnam',
+    }));
+    setErrors({});
+  };
+
+  const pickAddress = (a: SavedAddress) => {
+    setSelectedAddrId(a._id);
+    fillFormFromAddress(a);
+    setEditMode(false);
+  };
+
+  const startNewAddress = () => {
+    setSelectedAddrId(null);
+    setEditMode(true);
+    setForm((p) => ({
+      ...p,
+      recipientName: user?.name || '',
+      phone:         user?.phone || '',
+      street: '', ward: '', city: '', state: '',
+    }));
+  };
+
+  const startEditSelected = () => setEditMode(true);
+
+  const deleteAddress = async (id: string) => {
+    if (!confirm('Xoá địa chỉ này?')) return;
+    try {
+      const res = await addressService.remove(id);
+      const list = (res.data as any).data as SavedAddress[];
+      setSavedAddresses(list);
+      if (selectedAddrId === id) {
+        if (list.length > 0) pickAddress(list.find((a) => a.isDefault) || list[0]);
+        else startNewAddress();
+      }
+      toast.success('Đã xoá địa chỉ');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    }
+  };
 
   // Voucher state
   const [voucherCode,    setVoucherCode]    = useState('');
@@ -140,6 +214,27 @@ export default function CheckoutPage() {
     setShowConfirm(false);
     setLoading(true);
     try {
+      // Sync address to the user's book — best-effort, silent.
+      try {
+        const payload = {
+          label:         'Nhà',
+          recipientName: form.recipientName.trim(),
+          phone:         form.phone.trim(),
+          street:        form.street.trim(),
+          ward:          form.ward,
+          city:          form.city,
+          state:         form.state,
+          country:       form.country,
+        };
+        if (selectedAddrId && editMode) {
+          // Edited an existing entry → update it
+          await addressService.update(selectedAddrId, payload);
+        } else if (!selectedAddrId) {
+          // Brand-new entry → add it
+          await addressService.add({ ...payload, isDefault: savedAddresses.length === 0 });
+        }
+      } catch { /* ignore */ }
+
       // Strip affiliate code if buyer is internal (staff/sales/admin): they NEVER earn
       // commission — neither from their own code nor from a colleague's. Backend also
       // enforces this, but this is clearer to the user.
@@ -195,6 +290,82 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Form — on mobile shows AFTER the summary so user knows the total before scrolling through fields */}
         <form onSubmit={handleSubmit} className="order-2 lg:order-1 lg:col-span-3 space-y-5">
+
+          {/* ── Saved address picker ── */}
+          {savedAddresses.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <h2 className="font-bold text-gray-900">Địa chỉ đã lưu</h2>
+                </div>
+                <button type="button" onClick={startNewAddress}
+                  className="text-xs font-bold text-rose-600 hover:text-rose-700">
+                  + Thêm mới
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {savedAddresses.map((a) => {
+                  const isPicked = a._id === selectedAddrId && !editMode;
+                  return (
+                    <div key={a._id}
+                      className={`group relative rounded-xl border-2 p-3 cursor-pointer transition-all ${
+                        isPicked ? 'border-rose-500 bg-rose-50/40' : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                      onClick={() => pickAddress(a)}>
+                      <div className="flex items-start gap-3">
+                        <div className={`h-5 w-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                          isPicked ? 'border-rose-500' : 'border-gray-300'
+                        }`}>
+                          {isPicked && <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-gray-900 text-sm">{a.recipientName}</p>
+                            <span className="text-xs text-gray-500">·</span>
+                            <p className="text-xs font-mono text-gray-600">{a.phone}</p>
+                            <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded">
+                              {a.label}
+                            </span>
+                            {a.isDefault && (
+                              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">
+                                Mặc định
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                            {a.street}, {a.ward}, {a.state}
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {isPicked && (
+                            <button type="button" onClick={(e) => { e.stopPropagation(); startEditSelected(); }}
+                              className="text-[11px] text-primary-600 hover:underline font-semibold">
+                              Sửa
+                            </button>
+                          )}
+                          <button type="button" onClick={(e) => { e.stopPropagation(); deleteAddress(a._id); }}
+                            className="text-[11px] text-red-500 hover:underline font-semibold">
+                            Xoá
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Form fields — only shown when adding new OR editing selected ── */}
+          {(editMode || savedAddresses.length === 0) && (
+          <>
           {/* Recipient */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-6">
             <div className="flex items-center gap-2 mb-5">
@@ -204,7 +375,9 @@ export default function CheckoutPage() {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
               </div>
-              <h2 className="font-bold text-gray-900">Thông tin người nhận</h2>
+              <h2 className="font-bold text-gray-900">
+                {selectedAddrId ? 'Sửa địa chỉ' : savedAddresses.length === 0 ? 'Thông tin người nhận' : 'Thêm địa chỉ mới'}
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -234,6 +407,12 @@ export default function CheckoutPage() {
                 </svg>
               </div>
               <h2 className="font-bold text-gray-900">Địa chỉ giao hàng</h2>
+              {savedAddresses.length > 0 && (
+                <button type="button" onClick={() => { setEditMode(false); if (savedAddresses[0]) pickAddress(savedAddresses.find((a) => a.isDefault) || savedAddresses[0]); }}
+                  className="ml-auto text-xs text-gray-500 hover:text-gray-700">
+                  ← Quay lại danh sách
+                </button>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -259,6 +438,8 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
 
           {/* Note */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-6">

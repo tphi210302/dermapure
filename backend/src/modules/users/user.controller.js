@@ -45,7 +45,30 @@ const getAffiliateLeaderboard = asyncHandler(async (req, res) => {
   return ApiResponse.ok(res, rows);
 });
 
+// ── Address book ─────────────────────────────────────────
+const listMyAddresses = asyncHandler(async (req, res) => {
+  const list = await userService.listMyAddresses(req.user.id);
+  return ApiResponse.ok(res, list);
+});
+const addMyAddress = asyncHandler(async (req, res) => {
+  const list = await userService.addMyAddress(req.user.id, req.body);
+  return ApiResponse.created(res, list, 'Address added');
+});
+const updateMyAddress = asyncHandler(async (req, res) => {
+  const list = await userService.updateMyAddress(req.user.id, req.params.addrId, req.body);
+  return ApiResponse.ok(res, list, 'Address updated');
+});
+const deleteMyAddress = asyncHandler(async (req, res) => {
+  const list = await userService.deleteMyAddress(req.user.id, req.params.addrId);
+  return ApiResponse.ok(res, list, 'Address deleted');
+});
+const setMyDefaultAddress = asyncHandler(async (req, res) => {
+  const list = await userService.setMyDefaultAddress(req.user.id, req.params.addrId);
+  return ApiResponse.ok(res, list, 'Default address updated');
+});
+
 module.exports = {
   createUser, getAllUsers, getUserById, updateUser, deleteUser,
   updateProfile, getMyAffiliate, getAffiliateLeaderboard,
+  listMyAddresses, addMyAddress, updateMyAddress, deleteMyAddress, setMyDefaultAddress,
 };
