@@ -27,7 +27,7 @@ const LINKS = {
 
 // Sensible defaults in case the settings fetch fails (offline, cold start, etc.)
 const FALLBACK: Partial<SiteSetting> = {
-  siteName:  'Lumié',
+  siteName:  'Lumie',
   tagline:   'Mỹ phẩm chính hãng, lựa chọn của hàng nghìn khách hàng Việt — thắp sáng vẻ đẹp tự nhiên của bạn.',
   hotline:   '1800-123-456',
   email:     'support@dermapure.vn',
@@ -180,7 +180,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-gray-800 mt-6 sm:mt-10 pt-4 sm:pt-6 text-center">
           <p className="text-[10px] sm:text-xs text-gray-500">
-            © {new Date().getFullYear()} {s.siteName || 'Lumié'}. Tất cả quyền được bảo lưu.
+            © {new Date().getFullYear()} {s.siteName || 'Lumie'}. Tất cả quyền được bảo lưu.
           </p>
         </div>
       </div>

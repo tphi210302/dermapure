@@ -81,7 +81,7 @@ export default function PrivacyPage() {
         {/* Intro */}
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 mb-8">
           <p className="text-sm text-blue-800 leading-relaxed">
-            Lumié cam kết bảo vệ quyền riêng tư và dữ liệu cá nhân của bạn. Chính sách này mô tả cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn khi sử dụng dịch vụ của Lumié.
+            Lumie cam kết bảo vệ quyền riêng tư và dữ liệu cá nhân của bạn. Chính sách này mô tả cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn khi sử dụng dịch vụ của Lumie.
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-10">
-          Bằng cách sử dụng dịch vụ của Lumié, bạn đồng ý với chính sách bảo mật này.
+          Bằng cách sử dụng dịch vụ của Lumie, bạn đồng ý với chính sách bảo mật này.
         </p>
       </div>
     </div>

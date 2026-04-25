@@ -13,7 +13,7 @@ const settingSchema = new mongoose.Schema(
     key: { type: String, default: 'main', unique: true },
 
     // Branding
-    siteName:  { type: String, default: 'Lumié', maxlength: 80 },
+    siteName:  { type: String, default: 'Lumie', maxlength: 80 },
     tagline:   { type: String, default: 'Mỹ phẩm chính hãng — Tỏa sáng vẻ đẹp tự nhiên', maxlength: 200 },
     logoUrl:   { type: String, trim: true },
 

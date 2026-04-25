@@ -7,11 +7,11 @@ import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Lumié — Mỹ Phẩm Chính Hãng',
-    template: '%s | Lumié',
+    default: 'Lumie — Mỹ Phẩm Chính Hãng',
+    template: '%s | Lumie',
   },
-  description: 'Lumié — Mỹ phẩm chính hãng cho phụ nữ Việt. Tỏa sáng vẻ đẹp tự nhiên với serum, kem dưỡng, son môi và combo skincare cao cấp.',
-  applicationName: 'Lumié',
+  description: 'Lumie — Mỹ phẩm chính hãng cho phụ nữ Việt. Tỏa sáng vẻ đẹp tự nhiên với serum, kem dưỡng, son môi và combo skincare cao cấp.',
+  applicationName: 'Lumie',
   manifest: '/site.webmanifest',
 };
 

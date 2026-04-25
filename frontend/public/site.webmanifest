@@ -1,7 +1,7 @@
 {
-  "name": "Lumié — Mỹ Phẩm Chính Hãng",
-  "short_name": "Lumié",
-  "description": "Lumié — Mỹ phẩm chính hãng cho phụ nữ Việt. Tỏa sáng vẻ đẹp tự nhiên.",
+  "name": "Lumie — Mỹ Phẩm Chính Hãng",
+  "short_name": "Lumie",
+  "description": "Lumie — Mỹ phẩm chính hãng cho phụ nữ Việt. Tỏa sáng vẻ đẹp tự nhiên.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

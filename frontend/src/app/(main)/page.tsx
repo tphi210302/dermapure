@@ -403,7 +403,7 @@ export default function HomePage() {
             <div className="text-center mb-6 sm:mb-8">
               <p className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-2">Cam kết của chúng tôi</p>
               <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2">
-                Tại sao chọn {setting?.siteName || 'Lumié'}?
+                Tại sao chọn {setting?.siteName || 'Lumie'}?
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto leading-relaxed">
                 {setting?.tagline || 'Phân phối chính hãng từ các thương hiệu dược mỹ phẩm hàng đầu.'}

@@ -5,7 +5,7 @@
  * Cloudinary fetch URL that:
  *   - normalises the image to a square canvas (default 800×800) with white padding
  *   - auto-picks format (WebP/AVIF) + auto quality
- *   - overlays the "Lumié" text watermark in the bottom-right corner
+ *   - overlays the "Lumie" text watermark in the bottom-right corner
  *
  * When NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is unset, returns the original URL
  * (graceful fallback so local dev + unconfigured deploys still show images).
@@ -20,7 +20,7 @@ type Opts = {
   crop?: 'pad' | 'fill' | 'fit';
   /** Background color when crop=pad. Hex without #. Default `ffffff`. */
   bg?: string;
-  /** Show Lumié text watermark. Default true. */
+  /** Show Lumie text watermark. Default true. */
   watermark?: boolean;
   /** Watermark font size. Default 28 for 800px output. */
   wmSize?: number;
@@ -56,13 +56,13 @@ export const cloudinaryUrl = (url: string, opts: Opts = {}): string => {
     'dpr_2.0',
   ].join(',');
 
-  // Watermark: italic-looking text "Lumié" in elegant rose, with white outline.
-  // Cloudinary doesn't ship Playfair, but Times New Roman renders the é nicely.
-  // Skipped for tiny thumbnails where text becomes unreadable.
+  // Watermark: italic-bold "Lumie" in WHITE with a subtle black outline so it
+  // pops on any product photo (light, dark, busy backgrounds). This reads as a
+  // proper watermark rather than just pink text overlay.
   const wm =
     opts.watermark === false || w < 200
       ? ''
-      : `/l_text:Times%20New%20Roman_${opts.wmSize ?? 28}_bold_italic:Lumi%C3%A9,co_rgb:e11d48,bo_2px_solid_white,g_south_east,x_18,y_14,o_90`;
+      : `/l_text:Georgia_${opts.wmSize ?? 32}_bold_italic:Lumie,co_white,bo_2px_solid_rgb:00000080,g_south_east,x_18,y_16,o_92`;
 
   // Cloudinary is picky about URL encoding for fetched URLs.
   const encoded = encodeURIComponent(url);

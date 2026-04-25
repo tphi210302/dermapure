@@ -6,7 +6,7 @@ const SECTIONS = [
   {
     title: '1. Chấp nhận điều khoản',
     content: [
-      'Khi truy cập và sử dụng website Lumié, bạn đồng ý tuân thủ các điều khoản và điều kiện dưới đây.',
+      'Khi truy cập và sử dụng website Lumie, bạn đồng ý tuân thủ các điều khoản và điều kiện dưới đây.',
       'Nếu bạn không đồng ý với bất kỳ điều khoản nào, vui lòng không sử dụng dịch vụ của chúng tôi.',
       'Chúng tôi có quyền cập nhật điều khoản bất cứ lúc nào. Thay đổi có hiệu lực ngay khi đăng tải lên website.',
     ],
@@ -58,7 +58,7 @@ const SECTIONS = [
   {
     title: '7. Sở hữu trí tuệ',
     content: [
-      'Toàn bộ nội dung website (logo, hình ảnh, văn bản, thiết kế) thuộc sở hữu của Lumié.',
+      'Toàn bộ nội dung website (logo, hình ảnh, văn bản, thiết kế) thuộc sở hữu của Lumie.',
       'Bạn không được sao chép, tái sản xuất hoặc phân phối nội dung mà không có sự đồng ý bằng văn bản.',
     ],
   },
@@ -88,7 +88,7 @@ export default function TermsPage() {
         {/* Intro */}
         <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-8">
           <p className="text-sm text-amber-800 leading-relaxed">
-            Vui lòng đọc kỹ các điều khoản này trước khi sử dụng dịch vụ. Các điều khoản này điều chỉnh mối quan hệ giữa bạn và Lumié trong quá trình mua sắm và sử dụng dịch vụ.
+            Vui lòng đọc kỹ các điều khoản này trước khi sử dụng dịch vụ. Các điều khoản này điều chỉnh mối quan hệ giữa bạn và Lumie trong quá trình mua sắm và sử dụng dịch vụ.
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export default function TermsPage() {
         </div>
 
         <p className="text-xs text-gray-400 text-center mt-10">
-          © {new Date().getFullYear()} Lumié. Điều khoản này được soạn thảo theo pháp luật Việt Nam.
+          © {new Date().getFullYear()} Lumie. Điều khoản này được soạn thảo theo pháp luật Việt Nam.
         </p>
       </div>
     </div>

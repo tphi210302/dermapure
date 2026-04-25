@@ -30,7 +30,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Footer */}
       <footer className="relative z-10 border-t border-white/60 bg-white/30 backdrop-blur-sm py-4 px-4">
         <div className="max-w-xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
-          <p>© {new Date().getFullYear()} Lumié. Tất cả quyền được bảo lưu.</p>
+          <p>© {new Date().getFullYear()} Lumie. Tất cả quyền được bảo lưu.</p>
           <div className="flex items-center gap-4">
             <Link href="/products" className="hover:text-primary-600 transition-colors">Sản phẩm</Link>
             <Link href="/chinh-sach-bao-mat" className="hover:text-primary-600 transition-colors">Chính sách</Link>
