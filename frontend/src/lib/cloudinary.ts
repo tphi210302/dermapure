@@ -58,11 +58,18 @@ export const cloudinaryUrl = (url: string, opts: Opts = {}): string => {
 
   // Watermark: italic-bold "Lumie" in WHITE with a thin black outline so the
   // text reads on any product photo (light, dark, busy backgrounds).
-  // Cloudinary syntax: bo_<width>px_solid_<hexcolor> — no rgb: prefix.
+  //
+  // ⚠️ Cloudinary text size is in OUTPUT pixels. With dpr_2.0 the canvas is
+  // 2× the requested w/h, so we scale the watermark to ~8 % of the actual
+  // canvas width (= w * 2). For w=700 that's ~110 px, for w=1200 that's ~180 px.
+  // Caller can still override with opts.wmSize for fine-tuning.
+  const wmFontSize = opts.wmSize ?? Math.max(48, Math.round(w * 0.16));
+  const wmOffset   = Math.round(w * 0.025); // breathing room from edge
+  const wmOutline  = Math.max(3, Math.round(wmFontSize * 0.06));
   const wm =
     opts.watermark === false || w < 200
       ? ''
-      : `/l_text:Georgia_${opts.wmSize ?? 36}_bold_italic:Lumie,co_white,bo_2px_solid_black,g_south_east,x_20,y_18`;
+      : `/l_text:Georgia_${wmFontSize}_bold_italic:Lumie,co_white,bo_${wmOutline}px_solid_black,g_south_east,x_${wmOffset},y_${wmOffset}`;
 
   // Cloudinary is picky about URL encoding for fetched URLs.
   const encoded = encodeURIComponent(url);
