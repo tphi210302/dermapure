@@ -15,6 +15,8 @@ interface Props {
   size?: Size;
   theme?: Theme;
   iconOnly?: boolean;
+  /** Optional tagline shown stacked under the wordmark. */
+  tagline?: string;
   className?: string;
 }
 
@@ -48,7 +50,14 @@ const MonogramTile = ({ px, dotR }: { px: number; dotR: number }) => (
   </svg>
 );
 
-export default function Logo({ size = 'md', theme = 'light', iconOnly, className = '' }: Props) {
+const TAGLINE_PX: Record<Size, string> = {
+  xs: 'text-[9px]',
+  sm: 'text-[10px]',
+  md: 'text-[11px]',
+  lg: 'text-xs',
+};
+
+export default function Logo({ size = 'md', theme = 'light', iconOnly, tagline, className = '' }: Props) {
   const px = ICON_PX[size];
   const dotR = DOT_PX[size];
 
@@ -58,13 +67,22 @@ export default function Logo({ size = 'md', theme = 'light', iconOnly, className
         <MonogramTile px={px} dotR={dotR} />
       </span>
       {!iconOnly && (
-        <span
-          className={`${TEXT_PX[size]} font-bold italic tracking-[-0.02em] leading-none ${
-            theme === 'dark' ? 'text-white' : 'text-gray-900'
-          }`}
-          style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif" }}
-        >
-          Lumie
+        <span className="inline-flex flex-col leading-none">
+          <span
+            className={`${TEXT_PX[size]} font-bold italic tracking-[-0.02em] ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}
+            style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif" }}
+          >
+            Lumie
+          </span>
+          {tagline && (
+            <span className={`mt-1 ${TAGLINE_PX[size]} font-medium tracking-wide ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+            }`}>
+              {tagline}
+            </span>
+          )}
         </span>
       )}
     </span>

@@ -106,11 +106,8 @@ export default function Navbar() {
         <div className="flex h-[68px] items-center gap-3 lg:gap-5">
 
           {/* ── Logo ────────────────────────────────────────── */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 group transition-transform duration-200 group-hover:scale-105">
-            <Logo size="sm" />
-            <p className="hidden md:block text-[10px] text-gray-400 font-medium tracking-wide self-end pb-1">
-              Mỹ phẩm chính hãng
-            </p>
+          <Link href="/" className="flex items-center shrink-0 group transition-transform duration-200">
+            <Logo size="sm" tagline="Mỹ phẩm chính hãng" />
           </Link>
 
           {/* ── Desktop nav links ────────────────────────────── */}

@@ -56,13 +56,13 @@ export const cloudinaryUrl = (url: string, opts: Opts = {}): string => {
     'dpr_2.0',
   ].join(',');
 
-  // Watermark: italic-bold "Lumie" in WHITE with a subtle black outline so it
-  // pops on any product photo (light, dark, busy backgrounds). This reads as a
-  // proper watermark rather than just pink text overlay.
+  // Watermark: italic-bold "Lumie" in WHITE with a thin black outline so the
+  // text reads on any product photo (light, dark, busy backgrounds).
+  // Cloudinary syntax: bo_<width>px_solid_<hexcolor> — no rgb: prefix.
   const wm =
     opts.watermark === false || w < 200
       ? ''
-      : `/l_text:Georgia_${opts.wmSize ?? 32}_bold_italic:Lumie,co_white,bo_2px_solid_rgb:00000080,g_south_east,x_18,y_16,o_92`;
+      : `/l_text:Georgia_${opts.wmSize ?? 36}_bold_italic:Lumie,co_white,bo_2px_solid_black,g_south_east,x_20,y_18`;
 
   // Cloudinary is picky about URL encoding for fetched URLs.
   const encoded = encodeURIComponent(url);

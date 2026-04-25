@@ -14,11 +14,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* Top header — single logo, centered */}
       <div className="relative z-10 flex justify-center pt-10 pb-0">
-        <Link href="/" className="group flex flex-col items-center gap-3">
-          <Logo size="lg" />
-          <p className="text-[11px] text-gray-500 font-medium tracking-wide italic">
-            Mỹ phẩm chính hãng — Tỏa sáng tự nhiên
-          </p>
+        <Link href="/" className="group">
+          <Logo size="lg" tagline="Mỹ phẩm chính hãng" />
         </Link>
       </div>
 
