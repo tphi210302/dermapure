@@ -6,9 +6,15 @@ import { useAuth } from '@/context/AuthContext';
 import CartItem from '@/components/cart/CartItem';
 import { formatPrice } from '@/lib/utils';
 
+const SHIPPING_FEE      = 30000;
+const FREE_SHIPPING_MIN = 500000;
+
 export default function CartPage() {
   const { cart, cartTotal, cartCount, isLoading, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
+  const shippingFee = cartTotal >= FREE_SHIPPING_MIN ? 0 : SHIPPING_FEE;
+  const grandTotal  = cartTotal + shippingFee;
+  const amountToFreeShipping = Math.max(0, FREE_SHIPPING_MIN - cartTotal);
 
   if (!isAuthenticated) {
     return (
@@ -122,14 +128,23 @@ export default function CartPage() {
               )}
               <div className="flex justify-between text-gray-600">
                 <span>Vận chuyển</span>
-                <span className="font-semibold text-emerald-600">Miễn phí</span>
+                {shippingFee === 0 ? (
+                  <span className="font-semibold text-emerald-600">Miễn phí</span>
+                ) : (
+                  <span className="font-semibold text-gray-900">{formatPrice(shippingFee)}</span>
+                )}
               </div>
+              {amountToFreeShipping > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[11px] text-amber-800">
+                  💡 Mua thêm <strong>{formatPrice(amountToFreeShipping)}</strong> để được miễn phí vận chuyển
+                </div>
+              )}
             </div>
 
             <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
               <span className="font-bold text-gray-900">Tổng cộng</span>
               <div className="text-right">
-                <p className="text-xl font-extrabold text-primary-600">{formatPrice(cartTotal)}</p>
+                <p className="text-xl font-extrabold text-primary-600">{formatPrice(grandTotal)}</p>
                 <p className="text-xs text-gray-400">Đã bao gồm VAT</p>
               </div>
             </div>
@@ -156,7 +171,7 @@ export default function CartPage() {
 
             <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-400">
               <span>🔒 An toàn</span>
-              <span>🚚 Miễn phí vận chuyển</span>
+              <span>🚚 Free ship đơn ≥500K</span>
               <span>🔄 Đổi trả dễ dàng</span>
             </div>
           </div>
