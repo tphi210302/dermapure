@@ -193,8 +193,8 @@ export default function CheckoutPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-5">
+        {/* Form — on mobile shows AFTER the summary so user knows the total before scrolling through fields */}
+        <form onSubmit={handleSubmit} className="order-2 lg:order-1 lg:col-span-3 space-y-5">
           {/* Recipient */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-6">
             <div className="flex items-center gap-2 mb-5">
@@ -309,9 +309,9 @@ export default function CheckoutPage() {
           </p>
         </form>
 
-        {/* Order summary */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-5 sticky top-24">
+        {/* Order summary — appears FIRST on mobile so user sees total + voucher upfront */}
+        <div className="order-1 lg:order-2 lg:col-span-2">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-5 lg:sticky lg:top-24">
             <h2 className="font-bold text-gray-900 mb-4">
               Tóm tắt đơn hàng
               <span className="ml-2 text-sm font-normal text-gray-400">({cartCount} sản phẩm)</span>
